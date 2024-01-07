@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   build:
@@ -12,7 +15,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
+      
     - name: Set up CMake
       run: |
         sudo apt-get -y install cmake
@@ -24,7 +27,7 @@ jobs:
         cd json-server
         mkdir build
         cd build
-        cmake ../..
+        cmake ../
         make
 
     - name: Run tests
