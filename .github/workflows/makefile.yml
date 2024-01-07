@@ -1,27 +1,31 @@
-name: Makefile CI
+name: Build and Test
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - main
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-    - name: configure
-      run: ./configure
+    - name: Set up CMake
+      uses: actions/setup-cmake@v2
+      with:
+        cmake-version: '3.21'
 
-    - name: Install dependencies
-      run: make
+    - name: Build project
+      run: |
+        mkdir build
+        cd build/json-server
+        cmake ../..
+        make
 
-    - name: Run check
-      run: make check
-
-    - name: Run distcheck
-      run: make distcheck
+    - name: Run tests
+      run: |
+        cd build/json-server
+        ctest

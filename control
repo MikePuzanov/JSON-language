@@ -1,0 +1,5 @@
+Package: json-server
+Version: 1.0
+Architecture: amd64
+Maintainer: Mike <mike088080@gmail.com>
+Description: My Json Server
