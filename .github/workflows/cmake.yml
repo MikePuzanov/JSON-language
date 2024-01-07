@@ -34,11 +34,17 @@ jobs:
         cd build
         cmake ../
         make
+        
+    - name: Start local server
+      run: |
+        cd json-server
+        cd build
+        ./json-server
+        sleep 10
 
     - name: Run tests
       run: |
         cd json-server
         cd build
-        ./json-server
         cd json-server
         ./tests
