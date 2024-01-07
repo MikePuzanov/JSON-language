@@ -88,30 +88,21 @@ TEST_CASE("Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
 }
 
 TEST_CASE("Invalid JSON Format Request", "[invalid_json_format]") {
-    // То же самое: запускаем сервер и создаем HTTP-клиента
-
-    // Отправляем запрос с некорректным JSON форматом
     httplib::Client invalidJsonClient("localhost", 18080);
     auto invalidJsonResponse = invalidJsonClient.Post("/add", "{invalid_json_format}", "application/json");
 
-    // Проверяем, что ответ сервера содержит ожидаемый код ошибки 400
     REQUIRE(invalidJsonResponse);
     REQUIRE(invalidJsonResponse->status == 400);
 }
 
 TEST_CASE("Nonexistent Key Request", "[nonexistent_key]") {
-    // То же самое: запускаем сервер и создаем HTTP-клиента
-
-    // Формируем JSON-запрос для попытки получения данных по несуществующему ключу
     nlohmann::json nonexistentKeyRequest = {
         {"key", "nonexistent_key"}
     };
 
-    // Отправляем запрос на сервер
     httplib::Client nonexistentKeyClient("localhost", 18080);
     auto nonexistentKeyResponse = nonexistentKeyClient.Post("/get", nonexistentKeyRequest.dump(), "application/json");
 
-    // Проверяем, что ответ сервера содержит ожидаемый код ошибки 404
     REQUIRE(nonexistentKeyResponse);
     REQUIRE(nonexistentKeyResponse->status == 404);
 }
