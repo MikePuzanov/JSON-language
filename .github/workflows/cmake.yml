@@ -38,5 +38,7 @@ jobs:
     - name: Run tests
       run: |
         cd json-server
-        cd build/json-server
-        ctest
+        cd build
+        ./json-server
+        cd json-server
+        ./tests
