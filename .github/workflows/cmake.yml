@@ -15,20 +15,36 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-
+      
     - name: Set up CMake
-      uses: actions/setup-cmake@v2
-      with:
-        cmake-version: '3.21'
+      run: |
+        sudo apt-get -y install cmake
+        echo "PATH=$PATH:/usr/bin/cmake" >> $GITHUB_ENV
+        cmake --version
+
+    - name: Install Asio
+      run: |
+        sudo apt-get install -yq libasio-dev \
+        cmake
 
     - name: Build project
       run: |
+        cd json-server
         mkdir build
-        cd build/json-server
-        cmake ../..
+        cd build
+        cmake ../
         make
+        
+    - name: Start local server
+      run: |
+        cd json-server
+        cd build
+        ./json-server &
+        sleep 10
 
     - name: Run tests
       run: |
-        cd build/json-server
-        ctest
+        cd json-server
+        cd build
+        cd tests
+        ./tests

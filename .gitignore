@@ -35,3 +35,5 @@
 /json-server/.vscode
 /json-server/build
 /.vscode
+/library/.vscode
+/library/build
