@@ -19,7 +19,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
-add_executable(json-server src/main.cpp tests/main_test.cpp)
+add_executable(json-server ${SOURCES})
 
 target_include_directories(json-server PRIVATE ${nlohmann_json_SOURCE_DIR}/single_include)
 
