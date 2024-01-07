@@ -13,10 +13,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up CMake
-      uses: actions/setup-cmake@v2
+   - name: Set up CMake
+      uses: crazy-max/setup-cmake@v1
       with:
         cmake-version: '3.21'
+        binary-dir: '${{ github.workspace }}/cmake-bin'
 
     - name: Build project
       run: |
