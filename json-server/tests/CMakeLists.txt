@@ -1,17 +1,38 @@
 cmake_minimum_required(VERSION 3.12)
-project(json-server-tests)
+project(tests)
 
 set(CMAKE_CXX_STANDARD 14)
 
+
+include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG v3.4.0 
+)
+
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+  GIT_TAG v0.9.5
+)
+
+FetchContent_MakeAvailable(httplib)
+FetchContent_MakeAvailable(Catch2)
+
+include_directories(${httplib_SOURCE_DIR})
+include_directories(${catch2_SOURCE_DIR}/single_include)
+
 include_directories(crow)
 
-file(GLOB_RECURSE TEST_SOURCES "tests/*.cpp")
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# Выводим список исходных файлов для отладки
-message("TEST_SOURCES: ${TEST_SOURCES}")
+set(TEST_SOURCES
+    main_test.cpp
+)
 
 add_executable(tests ${TEST_SOURCES})
-
-target_link_libraries(tests server Catch2::Catch2 httplib)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain httplib)
 
 add_custom_target(run_tests COMMAND tests DEPENDS tests)

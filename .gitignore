@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+
+/json-server/.vscode
+/json-server/build

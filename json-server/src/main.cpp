@@ -2,64 +2,61 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <utility>
-#include <variant>
-#include <vector>
-#include <memory>
-#include <fstream>
-#include "json.hpp"
 #include <mutex>
+#include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
-using Map = std::map<std::string, double>; 
+using Map = std::map<std::string, nlohmann::json>;
 Map myDictionary;
 std::mutex dictionaryMutex;
-
 
 int main()
 {
     crow::SimpleApp app;
 
-    CROW_ROUTE(app, "/add_json").methods("POST"_method)([&myDictionary](const crow::request& req){
+    CROW_ROUTE(app, "/add").methods("POST"_method)([&myDictionary](const crow::request& req){
         try {
-            auto jsonRequest = json::parse(req.body);
+            auto jsonRequest = nlohmann::json::parse(req.body);
 
             std::string key = jsonRequest["key"];
+            nlohmann::json value = jsonRequest["value"];
 
             {
                 std::lock_guard<std::mutex> lock(dictionaryMutex);
                 myDictionary[key] = value;
             }
             
-            return crow::response{json{{"status", "success"}}.dump()};
+            return crow::response{200, crow::json::wvalue{{"status", "success"}}};
         } catch (const std::exception& e) {
             return crow::response(400);
         }
     });
 
     CROW_ROUTE(app, "/get").methods("POST"_method)([&myDictionary](const crow::request& req){
-        try {
-            auto jsonRequest = json::parse(req.body);
+    try {
+        auto jsonRequest = nlohmann::json::parse(req.body);
 
-            std::string key = jsonRequest["key"];
+        std::string key = jsonRequest["key"].get<std::string>();
+        int index = jsonRequest.value("index", -1);
 
-            {
-                std::lock_guard<std::mutex> lock(dictionaryMutex);
+        std::lock_guard<std::mutex> lock(dictionaryMutex);
 
-                auto dictEnd = myDictionary.end();
+        auto it = myDictionary.find(key);
 
-                auto it = myDictionary.find(key);
-            }
-
-            if (it != dictEnd) {
-                    return crow::response{json{{"status", "success"}, {"value", it->second}}.dump()};
+        if (it != myDictionary.end()) {
+            if (index >= 0 && index < it->second.size() && it->second.is_array()) {
+                return crow::response(200, it->second[index].dump());
             } else {
-                    return crow::response(404, json{{"status", "error"}, {"message", "Key not found"}});
+                return crow::response{200, it->second.dump()};
             }
-        } catch (const std::exception& e) {
-                return crow::response(400, json{{"status", "error"}, {"message", "Invalid JSON format"}});
+        } else {
+            return crow::response(404, crow::json::wvalue{{"status", "error"}, {"message", "Key not found"}});
         }
-    });
+    } catch (const std::exception& e) {
+        return crow::response(400, crow::json::wvalue{{"status", "error"}, {"message", "Invalid JSON format"}});
+    }
+});
+
+
 
     app.port(18080).multithreaded().run();
 }
