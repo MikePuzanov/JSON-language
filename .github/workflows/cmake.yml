@@ -22,6 +22,10 @@ jobs:
         echo "PATH=$PATH:/usr/bin/cmake" >> $GITHUB_ENV
         cmake --version
 
+    - name: Install Asio
+      run: |
+        sudo apt-get -y install libasio-dev
+
     - name: Build project
       run: |
         cd json-server
