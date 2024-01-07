@@ -24,8 +24,9 @@ jobs:
 
     - name: Build project
       run: |
+        cd json-server
         mkdir build
-        cd build/json-server
+        cd build
         cmake ../..
         make
 
