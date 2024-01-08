@@ -1,6 +1,6 @@
 # JSON-language
 
-[![Build Status](https://github.com/MikePuzanov/JSON-language/workflows/Build/badge.svg)](https://github.com/MikePuzanov/JSON-language/actions)
+<a href="https://github.com/CrowCpp/Crow/actions/workflows/build_and_test.yml"><img src="https://github.com/CrowCpp/Crow/actions/workflows/build_and_test.yml/badge.svg?branch=master" alt="Build Status"></a>
 
 
 # Cервер
