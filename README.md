@@ -3,9 +3,9 @@
 <a href="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml"><img src="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml/badge.svg?branch=master" alt="Build Status"></a>
 
 
-# Cервер
+## Cервер
 
-## Запуск
+### Запуск
 
 1. Убедитесь, что у вас установлен CMake и компилятор C++.
 2. Клонируйте репозиторий
@@ -14,7 +14,7 @@
 5. Соберите проект: `cmake .. && make`
 6. Запустите сервер: `./json-server`
 
-## Тестирование
+### Тестирование
 
 1. Убедитесь, что вы создали директорию для сборки проекта: `mkdir build && cd build`
 2. Убедитесь, что вы уже собрали проект: `cmake .. && make`
