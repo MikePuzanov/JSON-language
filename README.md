@@ -1,5 +1,8 @@
 # JSON-language
 
+[![Build Status](https://github.com/MikePuzanov/JSON-language/workflows/Build/badge.svg)](https://github.com/MikePuzanov/JSON-language/actions)
+
+
 # Cервер
 
 ## Запуск
