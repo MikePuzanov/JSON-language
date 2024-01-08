@@ -1,6 +1,6 @@
 # JSON-language
 
-<a href="https://github.com/CrowCpp/Crow/actions/workflows/build_and_test.yml"><img src="https://github.com/CrowCpp/Crow/actions/workflows/build_and_test.yml/badge.svg?branch=master" alt="Build Status"></a>
+<a href="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml"><img src="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml/badge.svg?branch=master" alt="Build Status"></a>
 
 
 # Cервер
