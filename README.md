@@ -22,3 +22,38 @@
 4. Откройте еще одно терминала
 5. Перейдите в /tests : `cd json-server/build/json-server/tests`
 6. Запустите тесты: `./tests`
+
+## Использование
+
+### Добавление JSON-записи
+
+Чтобы добавить новую запись, отправьте POST-запрос на эндпоинт `/add` с JSON-телом, содержащим ключ (`key`) и значение (`value`). Пример:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"key": "example_key", "value": "example_value"}' http://your-server-address/add
+```
+
+Ожидаемый успешный ответ:`{ "status": "success" }`
+
+### Получение JSON-записи
+
+Чтобы получить значение по ключу, отправьте POST-запрос на эндпоинт `/get` с JSON-телом, содержащим ключ (`key`). Пример:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"key": "example_key"}' http://your-server-address/get
+```
+
+Ожидаемый успешный ответ (если ключ найден):
+`{
+  "status": "success",
+  "value": "example_value"
+}`
+
+Если ключ не найден, ответ будет следующим:
+`{
+  "status": "error",
+  "message": "Key not found"
+}`
+
+### Postman
+Также для отправки запросов можете использовать удобную утилиту Postman.
