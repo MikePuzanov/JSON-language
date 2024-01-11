@@ -31,9 +31,11 @@
 *.out
 *.app
 
-
+/.vscode
+/.vs
 /json-server/.vscode
 /json-server/build
-/.vscode
+/json-server/out
 /library/.vscode
 /library/build
+/library/out

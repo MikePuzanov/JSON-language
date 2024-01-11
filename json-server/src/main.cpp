@@ -6,12 +6,13 @@
 #include <nlohmann/json.hpp>
 
 using Map = std::map<std::string, nlohmann::json>;
-Map myDictionary;
 std::mutex dictionaryMutex;
 
 int main()
 {
     crow::SimpleApp app;
+
+    Map myDictionary;
 
     CROW_ROUTE(app, "/add").methods("POST"_method)([&myDictionary](const crow::request& req){
         try {
