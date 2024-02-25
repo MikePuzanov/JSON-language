@@ -54,6 +54,12 @@
 ```bash
 curl -X POST -H "Content-Type: application/json" -d '[["one"], [1, "zs", {"v":"ret","hl":1}]]' http://your-server-address/add
 ```
+В данном примере запишется:
+```
+{
+  "one" : [1, "zs", {"v":"ret","hl":1}]
+}
+```
 
 Ожидаемый успешный ответ:`{ "status": "success" }`
 
