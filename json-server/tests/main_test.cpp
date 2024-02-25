@@ -6,30 +6,21 @@
 TEST_CASE("Add JSON Request", "[add_json]") {
     httplib::Client client("localhost", 18080);
 
-    nlohmann::json requestBody = {{ "one", {"two", 3}}};
+    nlohmann::json requestBody = {{"one"}, {"two", 3}};
 
     auto response = client.Post("/add", requestBody.dump(), "application/json");
 
     REQUIRE(response);
     REQUIRE(response->status == 200);
-
-    nlohmann::json responseBody = nlohmann::json::parse(response->body);
-    REQUIRE(responseBody["status"] == "Success");
 }
 
 TEST_CASE("Get JSON Request", "[get]") {
     httplib::Client client("localhost", 18080);
 
-    // Ensure that there is at least one item in the galaxy before the test
-    nlohmann::json addRequest = {
-        {{{"test_key"}, 42.0}}
-    };
+    nlohmann::json addRequest = {{"test_key"}, 42.0};
     client.Post("/add", addRequest.dump(), "application/json");
 
-    // Perform a GET request to retrieve the added item
-    nlohmann::json getRequest = {
-        {"test_key"}
-    };
+    nlohmann::json getRequest = {"test_key"};
 
     auto response = client.Post("/get", getRequest.dump(), "application/json");
 
@@ -54,7 +45,7 @@ TEST_CASE("Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
 
     nlohmann::json responseBody = nlohmann::json::parse(response->body);
     REQUIRE(responseBody["status"] == "error");
-    REQUIRE(responseBody["message"] == "Key not found");
+    REQUIRE(responseBody["message"] == "Нет такого поля");
 }
 
 TEST_CASE("Invalid JSON Format Request", "[invalid_json_format]") {
@@ -77,4 +68,38 @@ TEST_CASE("Nonexistent Key Request", "[nonexistent_key]") {
 
     REQUIRE(response);
     REQUIRE(response->status == 404);
+}
+
+TEST_CASE("Index Exception", "[index_exception]") {
+    httplib::Client client("localhost", 18080);
+    nlohmann::json addRequest = {{7, 2, 5, 0}};
+    client.Post("/add", addRequest.dump(), "application/json");
+
+    nlohmann::json getRequest = {10};
+
+    auto response = client.Post("/get", getRequest.dump(), "application/json");
+
+    REQUIRE(response);
+    REQUIRE(response->status == 404);
+
+    nlohmann::json responseBody = nlohmann::json::parse(response->body);
+    REQUIRE(responseBody["status"] == "error");
+    REQUIRE(responseBody["message"] == "Нет такого поля");
+}
+
+TEST_CASE("No array Exception", "[no_array_exception]") {
+    httplib::Client client("localhost", 18080);
+    nlohmann::json addRequest = {{}, {1, "zs", {{"v","ret"}, {"hl",1}}}};
+    client.Post("/add", addRequest.dump(), "application/json");
+
+    nlohmann::json getRequest = {"v"};
+
+    auto response = client.Post("/get", getRequest.dump(), "application/json");
+
+    REQUIRE(response);
+    REQUIRE(response->status == 404);
+
+    nlohmann::json responseBody = nlohmann::json::parse(response->body);
+    REQUIRE(responseBody["status"] == "error");
+    REQUIRE(responseBody["message"] == "Для выбора в массиве нужен числовой индекс");
 }

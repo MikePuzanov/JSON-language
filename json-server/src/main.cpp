@@ -41,12 +41,10 @@ json processGet(const json& query, const json& current) {
 
 void processAdd(const json& command, const json& result) {
     json& current = galaxy;
-    std::cout << command;
 
     json* currentLevel = &current;
 
     for (const auto& step : command) {
-        std::cout << step;
         if (step.is_string()) {
             if (currentLevel->is_object() && currentLevel->find(step.get<std::string>()) != currentLevel->end()) {
                 currentLevel = &(*currentLevel)[step.get<std::string>()];
@@ -64,7 +62,7 @@ void processAdd(const json& command, const json& result) {
             }
         } else {
             // Некорректный путь, возвращаем ошибку
-            std::cerr << "Error: Invalid path in the command" << std::endl;
+            std::cerr << "Error: Неверная команда" << std::endl;
             return;
         }
     }
@@ -83,7 +81,7 @@ int main() {
     crow::SimpleApp app;
 
     // Обработчик GET запроса по пути /get
-    CROW_ROUTE(app, "/get").methods("Post"_method)([](const crow::request& req) {
+    CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
             auto jsonRequest = json::parse(req.body);
 
@@ -103,11 +101,11 @@ int main() {
                 }
             } else {
                 // Если запрос не является массивом или объектом, возвращаем ошибку
-                return crow::response{400, "Invalid JSON format"};
+                return crow::response{400, "Неправильный формат JSON"};
             }
         } catch (const std::exception& e) {
             // Если произошла ошибка при парсинге JSON, возвращаем ошибку
-            return crow::response{400, "Invalid JSON format"};
+            return crow::response{400, "Неправильный формат JSON"};
         }
     });
 
@@ -123,10 +121,10 @@ CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
 
             return crow::response{200, "Success"};
         } else {
-            return crow::response{400, "Invalid JSON format"};
+            return crow::response{400, "Неправильный формат JSON"};
         }
     } catch (const std::exception& e) {
-        return crow::response{400, "Invalid JSON format"};
+        return crow::response{400, "Неправильный формат JSON"};
     }
 });
 
