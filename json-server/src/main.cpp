@@ -1,63 +1,134 @@
 #include <crow.h>
-#include <iostream>
-#include <map>
-#include <string>
-#include <mutex>
 #include <nlohmann/json.hpp>
+#include <mutex>
+#include <fstream>
+#include <iostream>
 
-using Map = std::map<std::string, nlohmann::json>;
-std::mutex dictionaryMutex;
+using json = nlohmann::json;
+nlohmann::json galaxy;
+std::mutex galaxyMutex;
 
-int main()
-{
+void saveGalaxy() {
+    std::ofstream file("galaxy.json");
+    file << galaxy.dump(4);
+}
+
+json processGet(const json& query, const json& current) {
+    json result = current;
+
+    for (const auto& step : query) {
+        if (result.is_object() && step.is_string() && result.find(step.get<std::string>()) != result.end()) {
+           result = result.at(step.get<std::string>());
+        } else if (result.is_array()) {
+            if (step.is_number_integer()) {
+                if (step >= 0 && step < result.size()) {
+                result = result[step.get<size_t>()];
+                }
+                else {
+                    return json::object({{"status", "error"}, {"message", "Нет такого индекса"}});
+                }
+            } else {
+                return json::object({{"status", "error"}, {"message", "Для выбора в массиве нужен числовой индекс"}});
+            }
+        } else {
+            // Если условия не выполнились, возвращаем ошибку
+            return json::object({{"status", "error"}, {"message", "Нет такого поля"}});
+        }
+    }
+
+    return result;
+}
+
+void processAdd(const json& command, const json& result) {
+    json& current = galaxy;
+    std::cout << command;
+
+    json* currentLevel = &current;
+
+    for (const auto& step : command) {
+        std::cout << step;
+        if (step.is_string()) {
+            if (currentLevel->is_object() && currentLevel->find(step.get<std::string>()) != currentLevel->end()) {
+                currentLevel = &(*currentLevel)[step.get<std::string>()];
+            } else {
+                (*currentLevel)[step.get<std::string>()] = json::object();
+                currentLevel = &(*currentLevel)[step.get<std::string>()];
+            }
+        } else if (step.is_number() && currentLevel->is_array()) {
+            size_t index = step;
+            if (index < currentLevel->size()) {
+                currentLevel = &(*currentLevel)[index];
+            } else {
+                currentLevel->push_back(json::object());
+                currentLevel = &(*currentLevel)[index];
+            }
+        } else {
+            // Некорректный путь, возвращаем ошибку
+            std::cerr << "Error: Invalid path in the command" << std::endl;
+            return;
+        }
+    }
+
+    *currentLevel = result;
+}
+
+int main() {
+    // Пытаемся загрузить галактику из файла
+    std::ifstream file("galaxy.json");
+    if (file.is_open()) {
+        file >> galaxy;
+        file.close();
+    }
+
     crow::SimpleApp app;
 
-    Map myDictionary;
-
-    CROW_ROUTE(app, "/add").methods("POST"_method)([&myDictionary](const crow::request& req){
+    // Обработчик GET запроса по пути /get
+    CROW_ROUTE(app, "/get").methods("Post"_method)([](const crow::request& req) {
         try {
-            auto jsonRequest = nlohmann::json::parse(req.body);
+            auto jsonRequest = json::parse(req.body);
 
-            std::string key = jsonRequest["key"];
-            nlohmann::json value = jsonRequest["value"];
-
-            {
-                std::lock_guard<std::mutex> lock(dictionaryMutex);
-                myDictionary[key] = value;
+            if (jsonRequest.empty()) {
+                return crow::response{200, galaxy.dump()};
             }
-            
-            return crow::response{200, crow::json::wvalue{{"status", "success"}}};
+
+            if (jsonRequest.is_array() || jsonRequest.is_object()) {
+                std::lock_guard<std::mutex> lock(galaxyMutex);
+
+                json result = processGet(jsonRequest, galaxy);
+
+                if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {
+                    return crow::response{404, result.dump()};
+                } else {
+                    return crow::response{200, result.dump()};
+                }
+            } else {
+                // Если запрос не является массивом или объектом, возвращаем ошибку
+                return crow::response{400, "Invalid JSON format"};
+            }
         } catch (const std::exception& e) {
-            return crow::response(400);
+            // Если произошла ошибка при парсинге JSON, возвращаем ошибку
+            return crow::response{400, "Invalid JSON format"};
         }
     });
 
-    CROW_ROUTE(app, "/get").methods("POST"_method)([&myDictionary](const crow::request& req){
+// Эндпоинт для создания/обновления объекта JSON по указателю
+CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
     try {
-        auto jsonRequest = nlohmann::json::parse(req.body);
+        auto jsonRequest = json::parse(req.body);
 
-        std::string key = jsonRequest["key"].get<std::string>();
-        int index = jsonRequest.value("index", -1);
+        if (jsonRequest.is_array()) {
+            std::lock_guard<std::mutex> lock(galaxyMutex);
 
-        std::lock_guard<std::mutex> lock(dictionaryMutex);
+            processAdd(jsonRequest[0], jsonRequest[1]);           
 
-        auto it = myDictionary.find(key);
-
-        if (it != myDictionary.end()) {
-            if (index >= 0 && index < it->second.size() && it->second.is_array()) {
-                return crow::response(200, it->second[index].dump());
-            } else {
-                return crow::response{200, it->second.dump()};
-            }
+            return crow::response{200, "Success"};
         } else {
-            return crow::response(404, crow::json::wvalue{{"status", "error"}, {"message", "Key not found"}});
+            return crow::response{400, "Invalid JSON format"};
         }
     } catch (const std::exception& e) {
-        return crow::response(400, crow::json::wvalue{{"status", "error"}, {"message", "Invalid JSON format"}});
+        return crow::response{400, "Invalid JSON format"};
     }
 });
-
-
 
     app.port(18080).multithreaded().run();
 }
