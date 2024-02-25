@@ -49,33 +49,22 @@
 
 ### Добавление JSON-записи
 
-Чтобы добавить новую запись, отправьте POST-запрос на эндпоинт `/add` с JSON-телом, содержащим ключ (`key`) и значение (`value`). Пример:
+Чтобы добавить новую запись, отправьте POST-запрос на эндпоинт `/add` с JSON-телом, содержащим набор команд куда мы хотим добавить и что хотим добавить. Пример:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"key": "example_key", "value": "example_value"}' http://your-server-address/add
+curl -X POST -H "Content-Type: application/json" -d '[["one"], [1, "zs", {"v":"ret","hl":1}]]' http://your-server-address/add
 ```
 
 Ожидаемый успешный ответ:`{ "status": "success" }`
 
 ### Получение JSON-записи
 
-Чтобы получить значение по ключу, отправьте POST-запрос на эндпоинт `/get` с JSON-телом, содержащим ключ (`key`). Пример:
+Чтобы получить значение по ключу, отправьте POST-запрос на эндпоинт `/get` с JSON-телом, содержащим набор команд до поля или массива, которое хотим получить. Пример:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"key": "example_key"}' http://your-server-address/get
+curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://your-server-address/get
 ```
-
-Ожидаемый успешный ответ (если ключ найден):
-`{
-  "status": "success",
-  "value": "example_value"
-}`
-
-Если ключ не найден, ответ будет следующим:
-`{
-  "status": "error",
-  "message": "Key not found"
-}`
+Если будем опираться на пример с добавление, то мы хотим получим "zs"
 
 ### Postman
 Также для отправки запросов можете использовать удобную утилиту Postman.
