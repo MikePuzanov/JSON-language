@@ -46,7 +46,7 @@ nlohmann::json MyLibrary::get(const nlohmann::json& command) {
 void MyLibrary::add(const nlohmann::json& command) {
     if (command.empty() || command.size() != 2)
     {
-        throw InvalidJSONFormatException("При попытке записи JSON-массив должен состоять из двух элементов. command = " + command);
+        throw InvalidJSONFormatException("При попытке записи JSON-массив должен состоять из двух элементов. command = " + command.dump());
     }
     
      //cout << command.dump() ;
@@ -55,15 +55,20 @@ void MyLibrary::add(const nlohmann::json& command) {
     if (path[0].is_string() && isURL(path[0])) {
         try
         {
-            string fullUrl = path[0].dump();
-            cout << fullUrl << endl;
+            string fullUrl = path[0].get<std::string>();
+            cout << fullUrl.c_str() << endl;
             nlohmann::json newPath(path.begin() + 1, path.end());
             cout << newPath.dump() << endl;
             nlohmann::json newCommand = { newPath, command[1] };
             cout << newCommand.dump() << endl;
 
             // Отправляем HTTP-POST-запрос
-            httplib::Client client(fullUrl.c_str());
+            httplib::Client client(fullUrl);
+
+            httplib::Params params = {
+                {},
+                {}
+            };
             nlohmann::json payload = newCommand;
             payload.erase(payload.begin());
             auto response = client.Post("/add", payload.dump(), "application/json");
@@ -123,16 +128,16 @@ nlohmann::json MyLibrary::processGet(const nlohmann::json& query, const nlohmann
                 result = result[step.get<size_t>()];
                 }
                 else {
-                    throw IndexException("Выход за рамеры массива. Mассив: " + result);
+                    throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
                     //return json::object({{"status", "error"}, {"message", indexException}});
                 }
             } else {
-                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result);
+                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
                 //return json::object({{"status", "error"}, {"message", arrayException}});
             }
         } else {
             // Если условия не выполнились, возвращаем ошибку
-            throw NotFoundDataException("Нет такого поля. Поле: " + step);
+            throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
             //return json::object({{"status", "error"}, {"message", "Нет такого поля. Поле: " + step}});
         }
     }
@@ -164,7 +169,7 @@ void MyLibrary::processAdd(const nlohmann::json& command, const nlohmann::json& 
         } else {
             // Некорректный путь, возвращаем ошибку
             cerr << "Error: Неверная команда" << endl;
-            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step);
+            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
         }
     }
 

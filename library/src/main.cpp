@@ -7,19 +7,22 @@ using namespace std;
 int main() {
     //setlocale(LC_CTYPE, "rus");
     setlocale(LC_ALL, "Russian");
-    SetConsoleCP(866);
-    SetConsoleOutputCP(866);
+    //SetConsoleCP(866);
+    //SetConsoleOutputCP(866);
     MyLibrary library;
     
-    nlohmann::json json = {
-        {"http://127.0.0.1"},
+    nlohmann::json json = 
+    {
+        {
+            "http://127.0.0.1:4000"
+        },
         {
             {
                 {"one", {"two", 3}}
             }
         }
     };
-    cout << "Ïðèâåò";
+    cout << "˜˜˜˜˜˜";
     //cout << "JSON content:\n" << json.dump(4) << endl;
     library.add(json);
 

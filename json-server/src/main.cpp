@@ -147,7 +147,7 @@ CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
 
         if (jsonRequest.is_array()) {
             if (jsonRequest.size() != 2) {
-                throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest);
+                throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
             }
             std::lock_guard<std::mutex> lock(galaxyMutex);
 
