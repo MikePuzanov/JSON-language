@@ -3,10 +3,23 @@
 #include <mutex>
 #include <fstream>
 #include <iostream>
+#include "MyExceptions.h"
 
 using json = nlohmann::json;
-nlohmann::json galaxy;
+json galaxy;
 std::mutex galaxyMutex;
+const std::string indexException = "Выход за рамеры массива";
+const std::string arrayException = "Для выбора в массиве нужен числовой индекс";
+
+json loadConfig(const std::string& configFile) {
+    std::ifstream file(configFile);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open config file: " + configFile);
+    }
+    json config;
+    file >> config;
+    return config;
+}
 
 void saveGalaxy() {
     std::ofstream file("galaxy.json");
@@ -25,14 +38,17 @@ json processGet(const json& query, const json& current) {
                 result = result[step.get<size_t>()];
                 }
                 else {
-                    return json::object({{"status", "error"}, {"message", "РќРµС‚ С‚Р°РєРѕРіРѕ РёРЅРґРµРєСЃР°"}});
+                    throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
+                    //return json::object({{"status", "error"}, {"message", indexException}});
                 }
             } else {
-                return json::object({{"status", "error"}, {"message", "Р”Р»СЏ РІС‹Р±РѕСЂР° РІ РјР°СЃСЃРёРІРµ РЅСѓР¶РµРЅ С‡РёСЃР»РѕРІРѕР№ РёРЅРґРµРєСЃ"}});
+                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
+                //return json::object({{"status", "error"}, {"message", arrayException}});
             }
         } else {
-            // Р•СЃР»Рё СѓСЃР»РѕРІРёСЏ РЅРµ РІС‹РїРѕР»РЅРёР»РёСЃСЊ, РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
-            return json::object({{"status", "error"}, {"message", "РќРµС‚ С‚Р°РєРѕРіРѕ РїРѕР»СЏ"}});
+            // Если условия не выполнились, возвращаем ошибку
+            throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
+            //return json::object({{"status", "error"}, {"message", "Нет такого поля. Поле: " + step}});
         }
     }
 
@@ -41,7 +57,6 @@ json processGet(const json& query, const json& current) {
 
 void processAdd(const json& command, const json& result) {
     json& current = galaxy;
-
     json* currentLevel = &current;
 
     for (const auto& step : command) {
@@ -61,17 +76,22 @@ void processAdd(const json& command, const json& result) {
                 currentLevel = &(*currentLevel)[index];
             }
         } else {
-            // РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РїСѓС‚СЊ, РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
-            std::cerr << "Error: РќРµРІРµСЂРЅР°СЏ РєРѕРјР°РЅРґР°" << std::endl;
-            return;
+            // Некорректный путь, возвращаем ошибку
+            std::cerr << "Error: Неверная команда" << std::endl;
+            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
         }
     }
 
     *currentLevel = result;
 }
 
+
 int main() {
-    // РџС‹С‚Р°РµРјСЃСЏ Р·Р°РіСЂСѓР·РёС‚СЊ РіР°Р»Р°РєС‚РёРєСѓ РёР· С„Р°Р№Р»Р°
+    json config = loadConfig("serverConfig.json");
+    std::string ip = config["ip"];
+    int port = config["port"];
+
+    // Пытаемся загрузить галактику из файла
     std::ifstream file("galaxy.json");
     if (file.is_open()) {
         file >> galaxy;
@@ -80,7 +100,7 @@ int main() {
 
     crow::SimpleApp app;
 
-    // РћР±СЂР°Р±РѕС‚С‡РёРє GET Р·Р°РїСЂРѕСЃР° РїРѕ РїСѓС‚Рё /get
+    // Обработчик GET запроса по пути /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
             auto jsonRequest = json::parse(req.body);
@@ -95,38 +115,54 @@ int main() {
                 json result = processGet(jsonRequest, galaxy);
 
                 if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {
+                    if (result.find("message") != result.end()) {
+                        if (result["message"] == indexException || result["message"] == arrayException) {
+                            return crow::response{422, result.dump()};
+                        }
+                    }
                     return crow::response{404, result.dump()};
                 } else {
                     return crow::response{200, result.dump()};
                 }
             } else {
-                // Р•СЃР»Рё Р·Р°РїСЂРѕСЃ РЅРµ СЏРІР»СЏРµС‚СЃСЏ РјР°СЃСЃРёРІРѕРј РёР»Рё РѕР±СЉРµРєС‚РѕРј, РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
-                return crow::response{400, "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ С„РѕСЂРјР°С‚ JSON"};
+                // Если запрос не является массивом или объектом, возвращаем ошибку
+                return crow::response{400, "Неправильный формат JSON"};
             }
+        } catch (const IndexException& e) {
+            return crow::response{400, e.what()};
+        } catch (const IsNotArrayException& e) {
+            return crow::response{400, e.what()};
+        } catch (const NotFoundDataException& e) {
+            return crow::response{404, e.what()};
         } catch (const std::exception& e) {
-            // Р•СЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё РїР°СЂСЃРёРЅРіРµ JSON, РІРѕР·РІСЂР°С‰Р°РµРј РѕС€РёР±РєСѓ
-            return crow::response{400, "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ С„РѕСЂРјР°С‚ JSON"};
+            // Если произошла ошибка при парсинге JSON, возвращаем ошибку
+                return crow::response{400, e.what()};//"Неправильный формат JSON"};
         }
     });
 
-// Р­РЅРґРїРѕРёРЅС‚ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ/РѕР±РЅРѕРІР»РµРЅРёСЏ РѕР±СЉРµРєС‚Р° JSON РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ
+// Эндпоинт для создания/обновления объекта JSON по указателю
 CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
     try {
         auto jsonRequest = json::parse(req.body);
 
         if (jsonRequest.is_array()) {
+            if (jsonRequest.size() != 2) {
+                throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest);
+            }
             std::lock_guard<std::mutex> lock(galaxyMutex);
 
             processAdd(jsonRequest[0], jsonRequest[1]);           
 
             return crow::response{200, "Success"};
         } else {
-            return crow::response{400, "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ С„РѕСЂРјР°С‚ JSON"};
+            return crow::response{400, "Неправильный формат JSON"};
         }
     } catch (const std::exception& e) {
-        return crow::response{400, "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ С„РѕСЂРјР°С‚ JSON"};
+        return crow::response{400, "Неправильный формат JSON"};
+    } catch (const InvalidJSONFormatException& e) {
+        return crow::response{404, e.what()};
     }
 });
 
-    app.port(18080).multithreaded().run();
+   app.bindaddr(ip).port(port).multithreaded().run();
 }

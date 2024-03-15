@@ -42,10 +42,6 @@ TEST_CASE("Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
 
     REQUIRE(response);
     REQUIRE(response->status == 404);
-
-    nlohmann::json responseBody = nlohmann::json::parse(response->body);
-    REQUIRE(responseBody["status"] == "error");
-    REQUIRE(responseBody["message"] == "Нет такого поля");
 }
 
 TEST_CASE("Invalid JSON Format Request", "[invalid_json_format]") {
@@ -81,10 +77,6 @@ TEST_CASE("Index Exception", "[index_exception]") {
 
     REQUIRE(response);
     REQUIRE(response->status == 404);
-
-    nlohmann::json responseBody = nlohmann::json::parse(response->body);
-    REQUIRE(responseBody["status"] == "error");
-    REQUIRE(responseBody["message"] == "Нет такого поля");
 }
 
 TEST_CASE("No array Exception", "[no_array_exception]") {
@@ -97,9 +89,5 @@ TEST_CASE("No array Exception", "[no_array_exception]") {
     auto response = client.Post("/get", getRequest.dump(), "application/json");
 
     REQUIRE(response);
-    REQUIRE(response->status == 404);
-
-    nlohmann::json responseBody = nlohmann::json::parse(response->body);
-    REQUIRE(responseBody["status"] == "error");
-    REQUIRE(responseBody["message"] == "Для выбора в массиве нужен числовой индекс");
+    REQUIRE(response->status == 400);
 }
