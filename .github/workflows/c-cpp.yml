@@ -1,0 +1,63 @@
+name: Build and Test Server Library
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Set up CMake
+      run: |
+        sudo apt-get -y install cmake
+        echo "PATH=$PATH:/usr/bin/cmake" >> $GITHUB_ENV
+        cmake --version
+
+    - name: Install Asio
+      run: |
+        sudo apt-get install -yq libasio-dev \
+        cmake
+
+    - name: Build Server project
+      run: |
+        cd json-server
+        mkdir build
+        cd build
+        cmake ../
+        make
+
+    - name: Build Library project
+      run: |
+        cd library
+        mkdir build
+        cd build
+        cmake ../
+        make
+        
+    - name: Start local server
+      run: |
+        cd json-server
+        ./build/json-server &
+        sleep 10
+
+    - name: Run library tests
+      run: |
+        sleep 5
+        ps aux | grep json-server | awk '{print   $2}' | xargs sudo kill -9
+        cd json-server
+         ./build/json-server &
+        sleep 10
+        cd ..
+        cd library
+        cd build
+        cd tests
+        ./tests
+
