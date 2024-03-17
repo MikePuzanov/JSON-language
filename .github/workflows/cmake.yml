@@ -25,9 +25,17 @@ jobs:
         sudo apt-get install -yq libasio-dev \
         cmake
 
-    - name: Build project
+    - name: Build Server project
       run: |
         cd json-server
+        mkdir build
+        cd build
+        cmake ../
+        make
+
+    - name: Build Library project
+      run: |
+        cd library
         mkdir build
         cd build
         cmake ../
@@ -39,9 +47,16 @@ jobs:
         ./build/json-server &
         sleep 10
 
-    - name: Run tests
+    - name: Run server tests
       run: |
         cd json-server
+        cd build
+        cd tests
+        ./tests
+
+    - name: Run library tests
+      run: |
+        cd library
         cd build
         cd tests
         ./tests
