@@ -36,7 +36,7 @@ jobs:
     - name: Start local server
       run: |
         cd json-server
-        ./json-server &
+        .build/json-server &
         sleep 10
 
     - name: Run tests
