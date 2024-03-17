@@ -53,10 +53,11 @@ jobs:
         cd build
         cd tests
         ./tests
-        ps aux | grep kusancho | awk '{print   $2}' | xargs sudo kill -9
 
     - name: Run library tests
       run: |
+        sleep 5
+        ps aux | grep json-server | awk '{print   $2}' | xargs sudo kill -9
         cd json-server
          ./build/json-server &
         sleep 10
