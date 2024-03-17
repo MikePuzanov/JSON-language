@@ -85,7 +85,7 @@ TEST_CASE("Index Exception", "[index_exception]") {
 }
 
 TEST_CASE("No array Exception", "[no_array_exception]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
     nlohmann::json addRequest = {{}, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     client.Post("/add", addRequest.dump(), "application/json");
 
