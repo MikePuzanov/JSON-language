@@ -5,33 +5,37 @@
 #include <iostream>
 #include "MyExceptions.h"
 
-using json = nlohmann::json;
+using namespace std;
+using namespace nlohmann;
 json galaxy;
-std::mutex galaxyMutex;
-const std::string indexException = "Выход за рамеры массива";
-const std::string arrayException = "Для выбора в массиве нужен числовой индекс";
+mutex galaxyMutex;
 
-json loadConfig(const std::string& configFile) {
-    std::ifstream file(configFile);
+json loadConfig(const string& configFile) {
+    try {
+        ifstream file(configFile);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open config file: " + configFile);
+        throw runtime_error("Failed to open config file: " + configFile);
     }
     json config;
     file >> config;
     return config;
+    }
+    catch (const exception& e) {
+        cerr << e.what(); 
+    }
 }
 
 void saveGalaxy() {
-    std::ofstream file("galaxy.json");
+    ofstream file("galaxy.json");
     file << galaxy.dump(4);
 }
 
-json processGet(const json& query, const json& current) {
-    json result = current;
-
+json processGet(const json& query) {
+    json result = galaxy;
+    cout << "Galaxy - " + galaxy.dump() << endl;
     for (const auto& step : query) {
-        if (result.is_object() && step.is_string() && result.find(step.get<std::string>()) != result.end()) {
-           result = result.at(step.get<std::string>());
+        if (result.is_object() && step.is_string() && result.find(step.get<string>()) != result.end()) {
+           result = result.at(step.get<string>());
         } else if (result.is_array()) {
             if (step.is_number_integer()) {
                 if (step >= 0 && step < result.size()) {
@@ -39,16 +43,13 @@ json processGet(const json& query, const json& current) {
                 }
                 else {
                     throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
-                    //return json::object({{"status", "error"}, {"message", indexException}});
                 }
             } else {
                 throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
-                //return json::object({{"status", "error"}, {"message", arrayException}});
             }
         } else {
             // Если условия не выполнились, возвращаем ошибку
             throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
-            //return json::object({{"status", "error"}, {"message", "Нет такого поля. Поле: " + step}});
         }
     }
 
@@ -61,11 +62,11 @@ void processAdd(const json& command, const json& result) {
 
     for (const auto& step : command) {
         if (step.is_string()) {
-            if (currentLevel->is_object() && currentLevel->find(step.get<std::string>()) != currentLevel->end()) {
-                currentLevel = &(*currentLevel)[step.get<std::string>()];
+            if (currentLevel->is_object() && currentLevel->find(step.get<string>()) != currentLevel->end()) {
+                currentLevel = &(*currentLevel)[step.get<string>()];
             } else {
-                (*currentLevel)[step.get<std::string>()] = json::object();
-                currentLevel = &(*currentLevel)[step.get<std::string>()];
+                (*currentLevel)[step.get<string>()] = json::object();
+                currentLevel = &(*currentLevel)[step.get<string>()];
             }
         } else if (step.is_number() && currentLevel->is_array()) {
             size_t index = step;
@@ -77,7 +78,7 @@ void processAdd(const json& command, const json& result) {
             }
         } else {
             // Некорректный путь, возвращаем ошибку
-            std::cerr << "Error: Неверная команда" << std::endl;
+            cerr << "Error: Неверная команда" << endl;
             throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
         }
     }
@@ -85,41 +86,41 @@ void processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
-
 int main() {
+    setlocale(LC_ALL, "Russian");
     json config = loadConfig("serverConfig.json");
-    std::string ip = config["ip"];
+    string ip = config["ip"];
     int port = config["port"];
 
     // Пытаемся загрузить галактику из файла
-    std::ifstream file("galaxy.json");
-    if (file.is_open()) {
-        file >> galaxy;
-        file.close();
-    }
+    // ifstream file("galaxy.json");
+    // if (file.is_open()) {
+    //     file >> galaxy;
+    //     file.close();
+    // }
 
     crow::SimpleApp app;
 
     // Обработчик GET запроса по пути /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
+            cout << endl << endl << "Старт запроса Get" << endl;
             auto jsonRequest = json::parse(req.body);
+            cout << "Тело запроса " + jsonRequest.dump() << endl;
+
 
             if (jsonRequest.empty()) {
                 return crow::response{200, galaxy.dump()};
             }
 
             if (jsonRequest.is_array() || jsonRequest.is_object()) {
-                std::lock_guard<std::mutex> lock(galaxyMutex);
+                lock_guard<mutex> lock(galaxyMutex);
 
-                json result = processGet(jsonRequest, galaxy);
+                cout << "Переход в функцию" << endl;
+                json result = processGet(jsonRequest);
+                cout << "Конец функции" << endl;
 
-                if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {
-                    if (result.find("message") != result.end()) {
-                        if (result["message"] == indexException || result["message"] == arrayException) {
-                            return crow::response{422, result.dump()};
-                        }
-                    }
+                if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {    
                     return crow::response{404, result.dump()};
                 } else {
                     return crow::response{200, result.dump()};
@@ -129,14 +130,22 @@ int main() {
                 return crow::response{400, "Неправильный формат JSON"};
             }
         } catch (const IndexException& e) {
+            cout << "Поймали ошибку IndexException." << endl;
+            cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const IsNotArrayException& e) {
+            cout << "Поймали ошибку IsNotArrayException." << endl;
+            cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const NotFoundDataException& e) {
+            cout << "Поймали ошибку NotFoundDataException." << endl;
+            cerr <<  e.what();
             return crow::response{404, e.what()};
-        } catch (const std::exception& e) {
+        } catch (const exception& e) {
+            cout << "Поймали ошибку." << endl;
+            cerr <<  e.what();
             // Если произошла ошибка при парсинге JSON, возвращаем ошибку
-                return crow::response{400, e.what()};//"Неправильный формат JSON"};
+            return crow::response{400, e.what()};//"Неправильный формат JSON"};
         }
     });
 
@@ -144,22 +153,26 @@ int main() {
 CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
     try {
         auto jsonRequest = json::parse(req.body);
-
+        cout << "Тело запроса " + jsonRequest.dump() << endl;
+        
         if (jsonRequest.is_array()) {
             if (jsonRequest.size() != 2) {
                 throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
             }
-            std::lock_guard<std::mutex> lock(galaxyMutex);
-
+            lock_guard<mutex> lock(galaxyMutex);
+            cout << "Переход в функцию записи" << endl;
             processAdd(jsonRequest[0], jsonRequest[1]);           
-
+            cout << "Конец функции записи" << endl;
             return crow::response{200, "Success"};
         } else {
             return crow::response{400, "Неправильный формат JSON"};
         }
-    } catch (const std::exception& e) {
+    } catch (const exception& e) {
+        cout << "Поймали ошибку" << endl;
         return crow::response{400, "Неправильный формат JSON"};
     } catch (const InvalidJSONFormatException& e) {
+        cout << "Поймали ошибку InvalidJSONFormatException." << endl;
+        cerr <<  e.what();
         return crow::response{404, e.what()};
     }
 });

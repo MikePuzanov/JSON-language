@@ -3,8 +3,13 @@
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 
+using namespace std;
+
+const string url = "localhost";
+const int port = 4000;
+
 TEST_CASE("Add JSON Request", "[add_json]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
 
     nlohmann::json requestBody = {{"one"}, {"two", 3}};
 
@@ -15,7 +20,7 @@ TEST_CASE("Add JSON Request", "[add_json]") {
 }
 
 TEST_CASE("Get JSON Request", "[get]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
 
     nlohmann::json addRequest = {{"test_key"}, 42.0};
     client.Post("/add", addRequest.dump(), "application/json");
@@ -32,7 +37,7 @@ TEST_CASE("Get JSON Request", "[get]") {
 }
 
 TEST_CASE("Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
 
     nlohmann::json getRequest = {
         {"nonexistent_key"}
@@ -45,7 +50,7 @@ TEST_CASE("Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
 }
 
 TEST_CASE("Invalid JSON Format Request", "[invalid_json_format]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
 
     auto response = client.Post("/add", "{invalid_json_format}", "application/json");
 
@@ -54,7 +59,7 @@ TEST_CASE("Invalid JSON Format Request", "[invalid_json_format]") {
 }
 
 TEST_CASE("Nonexistent Key Request", "[nonexistent_key]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
 
     nlohmann::json getRequest = {
         {"nonexistent_key"}
@@ -67,7 +72,7 @@ TEST_CASE("Nonexistent Key Request", "[nonexistent_key]") {
 }
 
 TEST_CASE("Index Exception", "[index_exception]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
     nlohmann::json addRequest = {{7, 2, 5, 0}};
     client.Post("/add", addRequest.dump(), "application/json");
 
@@ -80,7 +85,7 @@ TEST_CASE("Index Exception", "[index_exception]") {
 }
 
 TEST_CASE("No array Exception", "[no_array_exception]") {
-    httplib::Client client("localhost", 18080);
+    httplib::Client client(url, port);
     nlohmann::json addRequest = {{}, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     client.Post("/add", addRequest.dump(), "application/json");
 

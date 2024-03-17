@@ -1,119 +1,94 @@
 #include "json-language.h"
-#include "MyExceptions.h"
 #include <nlohmann/json.hpp>
 #include "httplib.h"
 #include <regex>
 
 using namespace std;
-nlohmann::json galaxy;
+using namespace nlohmann;
+using namespace httplib;
+json galaxy;
 mutex galaxyMutex;
 
-nlohmann::json MyLibrary::get(const nlohmann::json& command) {
+json MyLibrary::get(const json& command) {
     // Проверяем, есть ли URL в команде
+    cout << "Команда -" + command.dump() << endl;
     if (!command.empty() && command[0].is_string() && isURL(command[0])) {
-        try {
-            string fullUrl = command[0].get<string>();
-            cout << fullUrl << endl;
-            nlohmann::json newCommand(command.begin() + 1, command.end());
+        string fullUrl = command[0].get<string>();
+        cout << fullUrl << endl;
+        json newCommand(command.begin() + 1, command.end());
+        cout << "Новая команда - " + newCommand.dump() << endl;
 
-            // Отправляем HTTP-POST-запрос
-            httplib::Client client(fullUrl.c_str());
-            nlohmann::json payload = newCommand;
-            payload.erase(payload.begin());
-            auto response = client.Post("/get", payload.dump(), "application/json");
+        // Отправляем HTTP-POST-запрос
+        Client client(fullUrl);
+        json payload = newCommand;
+        auto response = client.Post("/get", payload.dump(), "application/json");
 
-            validateResponse(fullUrl, response);
-            
-            return nlohmann::json::parse(response->body);
-        } catch (const exception& e) {
-            cerr << "Error: Неверная команда" << endl;
-        }
+        validateResponse(fullUrl, response);
         
+        return json::parse(response->body);        
     } else {
         // Вызываем функцию для обработки запроса локально
-        try
-        {
-            lock_guard<mutex> lock(galaxyMutex);
-            return processGet(command, galaxy);
-        }
-        catch(const exception& e)
-        {
-            cerr << e.what() << '\n';
-        }
+        lock_guard<mutex> lock(galaxyMutex);
+        return processGet(command, galaxy);
     }
 }
 
-void MyLibrary::add(const nlohmann::json& command) {
+void MyLibrary::add(const json& command) {
     if (command.empty() || command.size() != 2)
     {
-        throw InvalidJSONFormatException("При попытке записи JSON-массив должен состоять из двух элементов. command = " + command.dump());
+        throw InvalidJSONFormatException("При попытке записи JSON-массив должен состоять из двух элементов.", command);
     }
     
-     //cout << command.dump() ;
-    nlohmann::json path = command[0];
+    json path = command[0];
     // Проверяем, есть ли URL в команде
     if (path[0].is_string() && isURL(path[0])) {
-        try
-        {
-            string fullUrl = path[0].get<std::string>();
-            cout << fullUrl.c_str() << endl;
-            nlohmann::json newPath(path.begin() + 1, path.end());
-            cout << newPath.dump() << endl;
-            nlohmann::json newCommand = { newPath, command[1] };
-            cout << newCommand.dump() << endl;
+        string fullUrl = path[0].get<string>();
+        json newPath(path.begin() + 1, path.end());
+        json newCommand = { newPath, command[1] };
+        cout << "Новая команда - " + newCommand.dump() << endl;
 
-            // Отправляем HTTP-POST-запрос
-            httplib::Client client(fullUrl);
-
-            httplib::Params params = {
-                {},
-                {}
-            };
-            nlohmann::json payload = newCommand;
-            payload.erase(payload.begin());
-            auto response = client.Post("/add", payload.dump(), "application/json");
-                        
-            validateResponse(fullUrl, response);
-        }
-        catch(const exception& e)
-        {
-            cerr << e.what() << '\n';
-        }
+        // Отправляем HTTP-POST-запрос
+        Client client(fullUrl);
+        json payload = newCommand;
+        auto response = client.Post("/add", payload.dump(), "application/json");
+                    
+        validateResponse(fullUrl, response);
     } else {
         // Вызываем функцию для обработки добавления локально
-        try
-        {
-            lock_guard<mutex> lock(galaxyMutex);
-            processAdd(command[0], command[1]);
-        }
-        catch(const exception& e)
-        {
-            cerr << e.what() << '\n';
-        }
+        lock_guard<mutex> lock(galaxyMutex);
+        processAdd(command[0], command[1]);
     }
 }
 
-void MyLibrary::validateResponse(string fullUrl, httplib::Result &response) {
+void MyLibrary::validateResponse(string fullUrl, Result &response) {
     if (!response) {
-        throw FailedConnectionException("Ошибка соединения с " + fullUrl);
+        throw FailedConnectionException("Ошибка соединения с сервером.", fullUrl);
     }
+
+    string responseBody = response->body;
 
     switch (response->status) {
         case 200:
             return;
         case 404:
-            throw NotFoundDataException("Не удалось найти данные на сервере " + fullUrl + ". Сообщение: " + response->body);
+            throw NotFoundDataServerException("Не удалось найти данные на сервере." , responseBody, fullUrl);
         case 400:
-            throw InvalidJSONFormatException(response->body);
+            if (responseBody.find("Выход за рамеры массива") != std::string::npos) {
+                throw IndexServerException("Выход за рамеры массива", responseBody, fullUrl);
+            } else if (responseBody.find("Для выбора в массиве нужен числовой индекс") != std::string::npos) {
+                throw IsNotArrayServerException("Для выбора в массиве нужен числовой индекс", responseBody, fullUrl);
+            } else {
+                throw InvalidJSONFormatServerException("Невалидный JSON отправлен на сервер.", responseBody, fullUrl);
+            }
         case 422:
-            throw InvalidCombinationException("Невалидное тело запроса. Сообщение: " + response->body);
+            throw InvalidCombinationServerException("Невалидное тело запроса.", responseBody, fullUrl);
         default:
-            throw ServerException("Unexpected server response.  Сообщение: " + response->body);
+            throw ServerException("Unexpected server response.", responseBody);
     }
 }
 
-nlohmann::json MyLibrary::processGet(const nlohmann::json& query, const nlohmann::json& current) {
-    nlohmann::json result = current;
+json MyLibrary::processGet(const json& query, const json& current) {
+    json result = current;
 
     if (query.empty()) {
         return galaxy;
@@ -128,34 +103,31 @@ nlohmann::json MyLibrary::processGet(const nlohmann::json& query, const nlohmann
                 result = result[step.get<size_t>()];
                 }
                 else {
-                    throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
-                    //return json::object({{"status", "error"}, {"message", indexException}});
+                    throw IndexException("Выход за рамеры массива.", result.dump(), result.size());
                 }
             } else {
-                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
-                //return json::object({{"status", "error"}, {"message", arrayException}});
+                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс.", result.dump());
             }
         } else {
             // Если условия не выполнились, возвращаем ошибку
-            throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
-            //return json::object({{"status", "error"}, {"message", "Нет такого поля. Поле: " + step}});
+            throw NotFoundDataException("Нет такого поля.", step.dump());
         }
     }
 
     return result;
 }
 
-void MyLibrary::processAdd(const nlohmann::json& command, const nlohmann::json& result) {
-    nlohmann::json& current = galaxy;
+void MyLibrary::processAdd(const json& command, const json& result) {
+    json& current = galaxy;
 
-    nlohmann::json* currentLevel = &current;
+    json* currentLevel = &current;
 
     for (const auto& step : command) {
         if (step.is_string()) {
             if (currentLevel->is_object() && currentLevel->find(step.get<string>()) != currentLevel->end()) {
                 currentLevel = &(*currentLevel)[step.get<string>()];
             } else {
-                (*currentLevel)[step.get<string>()] = nlohmann::json::object();
+                (*currentLevel)[step.get<string>()] = json::object();
                 currentLevel = &(*currentLevel)[step.get<string>()];
             }
         } else if (step.is_number() && currentLevel->is_array()) {
@@ -169,7 +141,7 @@ void MyLibrary::processAdd(const nlohmann::json& command, const nlohmann::json& 
         } else {
             // Некорректный путь, возвращаем ошибку
             cerr << "Error: Неверная команда" << endl;
-            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
+            throw InvalidCombinationException("Неверный комбинация.", step.dump());
         }
     }
 

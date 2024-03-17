@@ -5,39 +5,131 @@
 using namespace std;
 
 int main() {
-    //setlocale(LC_CTYPE, "rus");
     setlocale(LC_ALL, "Russian");
-    //SetConsoleCP(866);
-    //SetConsoleOutputCP(866);
     MyLibrary library;
-    
-    nlohmann::json json = 
-    {
-        {
-            "http://127.0.0.1:4000"
-        },
-        {
-            {
-                {"one", {"two", 3}}
-            }
-        }
-    };
-    cout << "˜˜˜˜˜˜";
-    //cout << "JSON content:\n" << json.dump(4) << endl;
+
+     nlohmann::json json = {{ "http://127.0.0.1:4000" }, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     library.add(json);
-
-    // json = { { "http://0.0.0.0:18080", "one" } };
-    // library.get(json);
-
-    // json = { { "http://0.0.0.0:18080" }, {{"one"}, {"two", 1412124214}}};
-    // library.add(json);
-
-    // json = { { "http://0.0.0.0:18080", "one" } };
-    // library.get(json);
-
-    // json = { {}, { {"one"}, {"two", 3} } };
-    // library.add(json);
-
-    // json = { {"one"} };
-    // library.get(json);
+    json = { "http://127.0.0.1:4000", "v"};
+    library.get(json);
 }
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // nlohmann::json json = 
+    // {
+    //     {
+    //         "http://127.0.0.1:4000"
+    //     },
+    //     {
+    //        {"one", {"two", 3}}
+    //     }
+    // };
+    // library.add(json);
+    // cout << "1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // json = 
+    // { 
+    //     "http://127.0.0.1:4000", "one"
+    // };
+    // cout << endl << "2 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // nlohmann::json result = library.get(json);
+    // cout << "2 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = 
+    // { 
+    //     { 
+    //         "http://127.0.0.1:4000", "one", 2 
+    //     },
+    //     1412124214
+    // };
+    // cout << endl << "3 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // library.add(json);
+    // cout << "3 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = { "http://127.0.0.1:4000", "one" };
+    // cout << endl << "4 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // result = library.get(json);
+    // cout << "4 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = 
+    // { 
+    //     {
+    //        "http://127.0.0.1:4000", "one", 2 
+    //     },  
+    //     0
+    // };
+    // cout << endl << "5 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // library.add(json);
+    // cout << "5 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // json = { "http://127.0.0.1:4000", "one", 2 };
+    // cout << endl << "6 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // result = library.get(json);
+    // cout << "6 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;
+
+
+
+    // cout << endl << endl << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½";
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // json = 
+    // {
+    //     {
+        
+    //     },
+    //     {
+    //        {"one", {"two", 3}}
+    //     }
+    // };
+    // library.add(json);
+    // cout << "1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // json = 
+    // { 
+    //     "one"
+    // };
+    // cout << endl << "2 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // result = library.get(json);
+    // cout << "2 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = 
+    // { 
+    //     { 
+    //         "one", 2 
+    //     },
+    //     1412124214
+    // };
+    // cout << endl << "3 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // library.add(json);
+    // cout << "3 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = { "one" };
+    // cout << endl << "4 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // result = library.get(json);
+    // cout << "4 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // json = 
+    // { 
+    //     {
+    //        "one", 2 
+    //     },  
+    //     0
+    // };
+    // cout << endl << "5 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // library.add(json);
+    // cout << "5 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+
+
+    // // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ json
+    // json = { "one", 2 };
+    // cout << endl << "6 ï¿½ï¿½ï¿½ï¿½ï¿½" << endl;
+    // result = library.get(json);
+    // cout << "6 ï¿½ï¿½ï¿½ï¿½ï¿½ - " + result.dump() << endl;

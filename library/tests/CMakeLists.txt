@@ -26,6 +26,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(TEST_SOURCES
     main_test.cpp
+    ../src/json-language.cpp
 )
 
 add_executable(tests ${TEST_SOURCES})
