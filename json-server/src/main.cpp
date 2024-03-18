@@ -86,12 +86,19 @@ void processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
-    json config = loadConfig("serverConfig.json");
-    string ip = config["ip"];
-    int port = config["port"];
-
+    std::string host = "";
+    int port = 0;
+    if (argc != 2) {
+        json config = loadConfig("serverConfig.json");
+        host = config["ip"];
+        port = config["port"];
+    } else {
+        host = argv[1];
+        port = std::stoi(argv[2]);
+    }
+    
     // Пытаемся загрузить галактику из файла
     // ifstream file("galaxy.json");
     // if (file.is_open()) {
@@ -167,15 +174,20 @@ int main() {
             } else {
                 return crow::response{400, "Неправильный формат JSON"};
             }
-        } catch (const exception& e) {
-            cout << "Поймали ошибку" << endl;
-            return crow::response{400, "Неправильный формат JSON"};
         } catch (const InvalidJSONFormatException& e) {
             cout << "Поймали ошибку InvalidJSONFormatException." << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
+        } catch (const exception& e) {
+            cout << "Поймали ошибку" << endl;
+            return crow::response{400, "Неправильный формат JSON"};
         }
     });
 
-   app.bindaddr(ip).port(port).multithreaded().run();
+    // Эндпоинт для создания/обновления объекта JSON по указателю
+    CROW_ROUTE(app, "/delete").methods("DELETE"_method)([](const crow::request& req) {
+        galaxy = {};
+    });
+
+   app.bindaddr(host).port(port).multithreaded().run();
 }
