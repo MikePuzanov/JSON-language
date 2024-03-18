@@ -3,7 +3,7 @@
 #include <mutex>
 #include <fstream>
 #include <iostream>
-#include "MyExceptions.h"
+#include "myExceptions.h"
 
 using namespace std;
 using namespace nlohmann;

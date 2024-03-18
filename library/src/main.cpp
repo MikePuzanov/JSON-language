@@ -1,4 +1,4 @@
-#include "json-language.h"
+#include "jsonLanguage.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
@@ -6,7 +6,7 @@ using namespace std;
 
 int main() {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
 
      nlohmann::json json = {{ "http://127.0.0.1:4000" }, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     library.add(json);
