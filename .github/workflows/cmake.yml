@@ -1,4 +1,4 @@
-name: Build and Test Server
+name: Build and Test
 
 on:
   push:
@@ -41,7 +41,7 @@ jobs:
         cmake ../
         make
         
-    - name: Start local server
+    - name: Start local server for SERVER TESTS
       run: |
         cd json-server
         ./build/json-server &
@@ -53,14 +53,16 @@ jobs:
         cd build
         cd tests
         ./tests
-      
-    - name: Run library tests
+
+    - name: Start local server for LIBRARY TESTS
       run: |
         cd json-server
         ./build/json-server 0.0.0.0 8080 &
         sleep 10
-        cd ..
-        cd json-server
+      
+    - name: Run library tests
+      run: |
+        cd library
         cd build
         cd tests
         ./tests
