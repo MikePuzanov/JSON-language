@@ -1,4 +1,4 @@
-#include "json-language.h"
+#include "JsonLanguage.h"
 #include <nlohmann/json.hpp>
 #include "httplib.h"
 #include <regex>
@@ -9,7 +9,7 @@ using namespace httplib;
 json galaxy;
 mutex galaxyMutex;
 
-json MyLibrary::get(const json& command) {
+json JsonLanguage::get(const json& command) {
     // Проверяем, есть ли URL в команде
     cout << "Команда -" + command.dump() << endl;
     if (!command.empty() && command[0].is_string() && isURL(command[0])) {
@@ -33,7 +33,7 @@ json MyLibrary::get(const json& command) {
     }
 }
 
-void MyLibrary::add(const json& command) {
+void JsonLanguage::add(const json& command) {
     if (command.empty() || command.size() != 2)
     {
         throw InvalidJSONFormatException("При попытке записи JSON-массив должен состоять из двух элементов.", command);
@@ -60,7 +60,7 @@ void MyLibrary::add(const json& command) {
     }
 }
 
-void MyLibrary::validateResponse(string fullUrl, Result &response) {
+void JsonLanguage::validateResponse(string fullUrl, Result &response) {
     if (!response) {
         throw FailedConnectionException("Ошибка соединения с сервером.", fullUrl);
     }
@@ -87,7 +87,7 @@ void MyLibrary::validateResponse(string fullUrl, Result &response) {
     }
 }
 
-json MyLibrary::processGet(const json& query, const json& current) {
+json JsonLanguage::processGet(const json& query, const json& current) {
     json result = current;
 
     if (query.empty()) {
@@ -117,7 +117,7 @@ json MyLibrary::processGet(const json& query, const json& current) {
     return result;
 }
 
-void MyLibrary::processAdd(const json& command, const json& result) {
+void JsonLanguage::processAdd(const json& command, const json& result) {
     json& current = galaxy;
 
     json* currentLevel = &current;
@@ -148,7 +148,7 @@ void MyLibrary::processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
-bool MyLibrary::isURL(const string &str) {
+bool JsonLanguage::isURL(const string &str) {
     // Регулярное выражение для проверки строки URL
     regex urlRegex("(https?|ftp)://[\\w\\-_]+(\\.[\\w\\-_]+)+([a-zA-Z0-9\\-.,@?^=%&:/~+#]*[a-zA-Z0-9\\-@?^=%&/~+#])?");
     return regex_match(str, urlRegex);

@@ -8,7 +8,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(SOURCES
     src/main.cpp
-    src/json-language.cpp
+    src/JsonLanguage.cpp
 )
 
 include(FetchContent)
@@ -33,7 +33,7 @@ FetchContent_Declare(
 set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(asio)
 
-add_executable(json-language ${SOURCES} src/json-language.cpp)
+add_executable(json-language ${SOURCES} src/JsonLanguage.cpp)
 
 target_include_directories(json-language PRIVATE 
     ${nlohmann_json_SOURCE_DIR}/single_include
