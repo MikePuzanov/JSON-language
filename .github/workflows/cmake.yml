@@ -53,3 +53,14 @@ jobs:
         cd build
         cd tests
         ./tests
+      
+    - name: Run library tests
+      run: |
+        cd json-server
+        ./build/json-server &
+        sleep 10
+        cd ..
+        cd json-server
+        cd build
+        cd tests
+        ./tests
