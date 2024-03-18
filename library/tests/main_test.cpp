@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-const std::string url = "http://127.0.0.1:4000";
+const std::string url = "http://0.0.0.0:8080";
 
 TEST_CASE("Invalid JSON in add function") {
     JsonLanguage library;
@@ -19,7 +19,6 @@ TEST_CASE("Invalid JSON in add function") {
         FAIL("Unexpected exception was thrown");
     }
 }
-
 
 TEST_CASE("LOCAL TEST: Get JSON Request", "[get]") {
     setlocale(LC_ALL, "Russian");

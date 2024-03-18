@@ -90,7 +90,8 @@ int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
     std::string host = "";
     int port = 0;
-    if (argc != 2) {
+    cout << argc;
+    if (argc != 3) {
         json config = loadConfig("serverConfig.json");
         host = config["ip"];
         port = config["port"];
@@ -182,11 +183,6 @@ int main(int argc, char* argv[]) {
             cout << "Поймали ошибку" << endl;
             return crow::response{400, "Неправильный формат JSON"};
         }
-    });
-
-    // Эндпоинт для создания/обновления объекта JSON по указателю
-    CROW_ROUTE(app, "/delete").methods("DELETE"_method)([](const crow::request& req) {
-        galaxy = {};
     });
 
    app.bindaddr(host).port(port).multithreaded().run();
