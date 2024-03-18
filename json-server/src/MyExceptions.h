@@ -11,9 +11,8 @@ public:
 
 class NotFoundDataException : public std::runtime_error {
 public:
-    using std::runtime_error::runtime_error;
-    //explicit NotFoundDataException(const std::string& message)
-    //    : std::runtime_error(message) {}
+    explicit NotFoundDataException(const std::string& message)
+        : std::runtime_error(message) {}
 };
 
 class IsNotArrayException : public std::runtime_error {
