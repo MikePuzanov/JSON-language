@@ -9,7 +9,7 @@
 using namespace std;
 using namespace nlohmann;
 
-class MyLibrary {
+class JsonLanguage {
 public:
     // Receiving by sequence
     json get(const json &query);

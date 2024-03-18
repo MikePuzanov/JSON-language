@@ -1,12 +1,12 @@
 #include <catch2/catch_all.hpp>// подключаем Catch2
-#include "json-language.h"
+#include "JsonLanguage.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
 const std::string url = "http://127.0.0.1:4000";
 
 TEST_CASE("Invalid JSON in add function") {
-    MyLibrary library;
+    JsonLanguage library;
 
     try {
         nlohmann::json json = { { 1, 2, 3, 4} };
@@ -23,7 +23,7 @@ TEST_CASE("Invalid JSON in add function") {
 
 TEST_CASE("LOCAL TEST: Get JSON Request", "[get]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
 
     nlohmann::json addRequest = {{"test_key"}, 42.0};
     library.add(addRequest);
@@ -36,7 +36,7 @@ TEST_CASE("LOCAL TEST: Get JSON Request", "[get]") {
 
 TEST_CASE("LOCAL TEST: Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     nlohmann::json getRequest = {
         {"nonexistent_key"}
     };
@@ -53,7 +53,7 @@ TEST_CASE("LOCAL TEST: Get JSON Request with Nonexistent Key", "[get_nonexistent
 
 TEST_CASE("LOCAL TEST: Invalid JSON Format Request", "[invalid_json_format]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     nlohmann::json json = {
         {"invalid_json_format"}
     };
@@ -70,7 +70,7 @@ TEST_CASE("LOCAL TEST: Invalid JSON Format Request", "[invalid_json_format]") {
 
 TEST_CASE("LOCAL TEST: Index Exception", "[index_exception]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     
     nlohmann::json json = {{}, {7, 2, 5, 0}};
     library.add(json);
@@ -88,7 +88,7 @@ TEST_CASE("LOCAL TEST: Index Exception", "[index_exception]") {
 
 TEST_CASE("LOCAL TEST: No array Exception", "[no_array_exception]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     
     nlohmann::json json = {{}, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     library.add(json);
@@ -108,7 +108,7 @@ TEST_CASE("LOCAL TEST: No array Exception", "[no_array_exception]") {
 
 TEST_CASE("SERVER TEST: Get JSON Request", "[get]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
 
     nlohmann::json addRequest = {{ url, "test_key"}, 42.0};
     library.add(addRequest);
@@ -121,7 +121,7 @@ TEST_CASE("SERVER TEST: Get JSON Request", "[get]") {
 
 TEST_CASE("SERVER TEST: Get JSON Request with Nonexistent Key", "[get_nonexistent_key]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     nlohmann::json getRequest = {  url, "nonexistent_key" };
 
     try {
@@ -136,7 +136,7 @@ TEST_CASE("SERVER TEST: Get JSON Request with Nonexistent Key", "[get_nonexisten
 
 TEST_CASE("SERVER TEST: Invalid JSON Format Request", "[invalid_json_format]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     nlohmann::json json = { { url, "invalid_json_format" } };
 
     try {
@@ -151,7 +151,7 @@ TEST_CASE("SERVER TEST: Invalid JSON Format Request", "[invalid_json_format]") {
 
 TEST_CASE("SERVER TEST: Index Exception", "[index_exception]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     
     nlohmann::json json = {{ url}, {7, 2, 5, 0}};
     library.add(json);
@@ -169,7 +169,7 @@ TEST_CASE("SERVER TEST: Index Exception", "[index_exception]") {
 
 TEST_CASE("SERVER TEST: No array Exception", "[no_array_exception]") {
     setlocale(LC_ALL, "Russian");
-    MyLibrary library;
+    JsonLanguage library;
     
     nlohmann::json json = {{ url }, {1, "zs", {{"v","ret"}, {"hl",1}}}};
     library.add(json);
