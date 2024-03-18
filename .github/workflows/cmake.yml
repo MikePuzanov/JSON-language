@@ -57,7 +57,7 @@ jobs:
     - name: Run library tests
       run: |
         cd json-server
-        ./build/json-server &
+        ./build/json-server 0.0.0.0 8080 &
         sleep 10
         cd ..
         cd json-server
