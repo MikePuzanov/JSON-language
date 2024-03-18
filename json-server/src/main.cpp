@@ -3,7 +3,7 @@
 #include <mutex>
 #include <fstream>
 #include <iostream>
-#include "myExceptions.h"
+#include "MyExceptions.h"
 
 using namespace std;
 using namespace nlohmann;
@@ -86,12 +86,20 @@ void processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
-    json config = loadConfig("serverConfig.json");
-    string ip = config["ip"];
-    int port = config["port"];
-
+    std::string host = "";
+    int port = 0;
+    cout << argc;
+    if (argc != 3) {
+        json config = loadConfig("serverConfig.json");
+        host = config["ip"];
+        port = config["port"];
+    } else {
+        host = argv[1];
+        port = std::stoi(argv[2]);
+    }
+    
     // Пытаемся загрузить галактику из файла
     // ifstream file("galaxy.json");
     // if (file.is_open()) {
@@ -149,33 +157,33 @@ int main() {
         }
     });
 
-// Эндпоинт для создания/обновления объекта JSON по указателю
-CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
-    try {
-        auto jsonRequest = json::parse(req.body);
-        cout << "Тело запроса " + jsonRequest.dump() << endl;
-        
-        if (jsonRequest.is_array()) {
-            if (jsonRequest.size() != 2) {
-                throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
+    // Эндпоинт для создания/обновления объекта JSON по указателю
+    CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
+        try {
+            auto jsonRequest = json::parse(req.body);
+            cout << "Тело запроса " + jsonRequest.dump() << endl;
+            
+            if (jsonRequest.is_array()) {
+                if (jsonRequest.size() != 2) {
+                    throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
+                }
+                lock_guard<mutex> lock(galaxyMutex);
+                cout << "Переход в функцию записи" << endl;
+                processAdd(jsonRequest[0], jsonRequest[1]);           
+                cout << "Конец функции записи" << endl;
+                return crow::response{200, "Success"};
+            } else {
+                return crow::response{400, "Неправильный формат JSON"};
             }
-            lock_guard<mutex> lock(galaxyMutex);
-            cout << "Переход в функцию записи" << endl;
-            processAdd(jsonRequest[0], jsonRequest[1]);           
-            cout << "Конец функции записи" << endl;
-            return crow::response{200, "Success"};
-        } else {
+        } catch (const InvalidJSONFormatException& e) {
+            cout << "Поймали ошибку InvalidJSONFormatException." << endl;
+            cerr <<  e.what();
+            return crow::response{404, e.what()};
+        } catch (const exception& e) {
+            cout << "Поймали ошибку" << endl;
             return crow::response{400, "Неправильный формат JSON"};
         }
-    } catch (const exception& e) {
-        cout << "Поймали ошибку" << endl;
-        return crow::response{400, "Неправильный формат JSON"};
-    } catch (const InvalidJSONFormatException& e) {
-        cout << "Поймали ошибку InvalidJSONFormatException." << endl;
-        cerr <<  e.what();
-        return crow::response{404, e.what()};
-    }
-});
+    });
 
-   app.bindaddr(ip).port(port).multithreaded().run();
+   app.bindaddr(host).port(port).multithreaded().run();
 }
