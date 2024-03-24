@@ -8,128 +8,114 @@ int main() {
     setlocale(LC_ALL, "Russian");
     JsonLanguage library;
 
-     nlohmann::json json = {{ "http://127.0.0.1:4000" }, {1, "zs", {{"v","ret"}, {"hl",1}}}};
+    nlohmann::json json = 
+    {
+        {
+            "http://127.0.0.1:4000"
+        },
+        {
+           {"one", {"two", 3}}
+        }
+    };
     library.add(json);
-    json = { "http://127.0.0.1:4000", "v"};
-    library.get(json);
-}
-    // ���������� json
-    // nlohmann::json json = 
-    // {
-    //     {
-    //         "http://127.0.0.1:4000"
-    //     },
-    //     {
-    //        {"one", {"two", 3}}
-    //     }
-    // };
-    // library.add(json);
-    // cout << "1 ��������" << endl;
+    cout << "1 command \"Add\". JSON = " + json.dump() << endl;
     
-    // // ���������� json
-    // json = 
-    // { 
-    //     "http://127.0.0.1:4000", "one"
-    // };
-    // cout << endl << "2 �����" << endl;
-    // nlohmann::json result = library.get(json);
-    // cout << "2 ����� - " + result.dump() << endl;
 
-    // // ����� 2 �������� � �������
-    // json = 
-    // { 
-    //     { 
-    //         "http://127.0.0.1:4000", "one", 2 
-    //     },
-    //     1412124214
-    // };
-    // cout << endl << "3 �����" << endl;
-    // library.add(json);
-    // cout << "3 �����" << endl;
+    json = 
+    { 
+        "http://127.0.0.1:4000", "one"
+    };
+    cout << endl << "2 command \"Get\". JSON = " + json.dump() << endl;
+    nlohmann::json result = library.get(json);
+    cout << "2 command. Result = " + result.dump() << endl;
 
-    // // ��������� 2 �������� � �������
-    // json = { "http://127.0.0.1:4000", "one" };
-    // cout << endl << "4 �����" << endl;
-    // result = library.get(json);
-    // cout << "4 ����� - " + result.dump() << endl;
-
-    // // ���������� ������ �������� � ������
-    // json = 
-    // { 
-    //     {
-    //        "http://127.0.0.1:4000", "one", 2 
-    //     },  
-    //     0
-    // };
-    // cout << endl << "5 �����" << endl;
-    // library.add(json);
-    // cout << "5 �����" << endl;
+    json = 
+    { 
+        { 
+            "http://127.0.0.1:4000", "one", 2 
+        },
+        1412124214
+    };
+    cout << "3 command \"Add\". JSON = " + json.dump() << endl;
+    library.add(json);
 
 
-    // // ��������� json
-    // json = { "http://127.0.0.1:4000", "one", 2 };
-    // cout << endl << "6 �����" << endl;
-    // result = library.get(json);
-    // cout << "6 ����� - " + result.dump() << endl;
+    json = { "http://127.0.0.1:4000", "one" };
+    cout << "4 command \"Get\". JSON = " + json.dump() << endl;
+    result = library.get(json);
+    cout << "4 command. Result = " + result.dump() << endl;
 
 
+    json = 
+    { 
+        {
+           "http://127.0.0.1:4000", "one", 2 
+        },  
+        0
+    };
+    cout << "5 command \"Add\". JSON = " + json.dump() << endl;
+    library.add(json);
 
-    // cout << endl << endl << "������ ��������";
-    // // ���������� json
-    // json = 
-    // {
-    //     {
+
+    json = { "http://127.0.0.1:4000", "one", 2 };
+    cout << "6 command \"Get\". JSON = " + json.dump() << endl;
+    result = library.get(json);
+    cout << "6 command. Result = " + result.dump() << endl;
+
+
+    json = 
+    {
+        {
         
-    //     },
-    //     {
-    //        {"one", {"two", 3}}
-    //     }
-    // };
-    // library.add(json);
-    // cout << "1 ��������" << endl;
+        },
+        {
+           {"one", {"two", 3}}
+        }
+    };
+    library.add(json);
+    cout << "1 command \"Add\". JSON = " + json.dump() << endl;
     
-    // // ���������� json
-    // json = 
-    // { 
-    //     "one"
-    // };
-    // cout << endl << "2 �����" << endl;
-    // result = library.get(json);
-    // cout << "2 ����� - " + result.dump() << endl;
 
-    // // ����� 2 �������� � �������
-    // json = 
-    // { 
-    //     { 
-    //         "one", 2 
-    //     },
-    //     1412124214
-    // };
-    // cout << endl << "3 �����" << endl;
-    // library.add(json);
-    // cout << "3 �����" << endl;
-
-    // // ��������� 2 �������� � �������
-    // json = { "one" };
-    // cout << endl << "4 �����" << endl;
-    // result = library.get(json);
-    // cout << "4 ����� - " + result.dump() << endl;
-
-    // // ���������� ������ �������� � ������
-    // json = 
-    // { 
-    //     {
-    //        "one", 2 
-    //     },  
-    //     0
-    // };
-    // cout << endl << "5 �����" << endl;
-    // library.add(json);
-    // cout << "5 �����" << endl;
+    json = 
+    { 
+        "one"
+    };
+    cout << "2 command \"Get\". JSON = " + json.dump() << endl;
+    result = library.get(json);
+    cout << "2 command. Result = " + result.dump() << endl;
 
 
-    // // ��������� json
-    // json = { "one", 2 };
-    // cout << endl << "6 �����" << endl;
-    // result = library.get(json);
-    // cout << "6 ����� - " + result.dump() << endl;
+    json = 
+    { 
+        { 
+            "one", 2 
+        },
+        1412124214
+    };
+    cout << "3 command \"Add\". JSON = " + json.dump() << endl;
+    library.add(json);
+
+
+    json = { "one" };
+    cout << "4 command \"Get\". JSON = " + json.dump() << endl;
+    result = library.get(json);
+    cout << "4 command. Result = " + result.dump() << endl;
+
+    
+    json = 
+    { 
+        {
+           "one", 2 
+        },  
+        0
+    };
+    cout << "5 command \"Add\". JSON = " + json.dump() << endl;
+    library.add(json);
+
+
+    // ��������� json
+    json = { "one", 2 };
+    cout << "6 command \"Get\". JSON = " + json.dump() << endl;
+    result = library.get(json);
+    cout << "6 command. Result = " + result.dump() << endl;
+}
