@@ -4,30 +4,44 @@
 #include <fstream>
 #include <iostream>
 #include "MyExceptions.h"
+#include <asio.hpp>
+#include <csignal>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace nlohmann;
 json galaxy;
 mutex galaxyMutex;
+mutex fileMutex;
+const string galaxyFileName = "galaxy.json";
 
 json loadConfig(const string& configFile) {
     try {
         ifstream file(configFile);
-    if (!file.is_open()) {
-        throw runtime_error("Failed to open config file: " + configFile);
-    }
-    json config;
-    file >> config;
-    return config;
+        if (!file.is_open()) {
+            throw runtime_error("Failed to open config file: " + configFile);
+        }
+        json config;
+        file >> config;
+        return config;
     }
     catch (const exception& e) {
         cerr << e.what(); 
     }
 }
 
-void saveGalaxy() {
-    ofstream file("galaxy.json");
-    file << galaxy.dump(4);
+// Функция для сохранения данных galaxy в файл
+void saveGalaxyToFile(const json& galaxy) {
+    ofstream file(galaxyFileName);
+    if (file.is_open()) {
+        lock_guard<mutex> lock(fileMutex);
+        file << galaxy.dump(4); // Записываем отформатированный JSON с отступами в 4 пробела
+        file.close();
+        cout << "Данные сохранены в файл " << galaxyFileName << endl;
+    } else {
+        cerr << "Ошибка при открытии файла " << galaxyFileName << " для записи." << endl;
+    }
 }
 
 json processGet(const json& query) {
@@ -39,7 +53,7 @@ json processGet(const json& query) {
         } else if (result.is_array()) {
             if (step.is_number_integer()) {
                 if (step >= 0 && step < result.size()) {
-                result = result[step.get<size_t>()];
+                    result = result[step.get<size_t>()];
                 }
                 else {
                     throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
@@ -86,6 +100,37 @@ void processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
+#ifdef _WIN32
+#include <Windows.h>
+
+// Обработчик событий консоли для Windows
+BOOL WINAPI ConsoleHandler(DWORD signal) {
+    switch (signal) {
+        case CTRL_C_EVENT:
+        case CTRL_BREAK_EVENT:
+        case CTRL_CLOSE_EVENT:
+        case CTRL_SHUTDOWN_EVENT:
+        case CTRL_LOGOFF_EVENT:
+            // Обработка события
+            cout << "Вызван обработчик сигнала " << signal << endl;
+            saveGalaxyToFile(galaxy);
+            exit(signal);
+        default:
+            return FALSE;
+    }
+}
+#else
+#include <unistd.h>
+
+// Обработчик сигналов для Linux
+void signalHandler(int signal) {
+    // Обработка сигнала
+    cout << "Вызван обработчик сигнала " << signal << endl;
+    saveGalaxyToFile(galaxy);
+    exit(signal);
+}
+#endif
+
 int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
     std::string host = "";
@@ -97,15 +142,28 @@ int main(int argc, char* argv[]) {
         port = config["port"];
     } else {
         host = argv[1];
-        port = std::stoi(argv[2]);
+        port = stoi(argv[2]);
     }
-    
-    // Пытаемся загрузить галактику из файла
-    // ifstream file("galaxy.json");
-    // if (file.is_open()) {
-    //     file >> galaxy;
-    //     file.close();
-    // }
+
+    galaxy = { { "afsafsdfsdf", "afwa14214214214fwar"} };
+
+    saveGalaxyToFile(galaxy);
+
+    #ifdef _WIN32
+    // Регистрация обработчика консоли для Windows
+    if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
+        cerr << "Ошибка при регистрации обработчика консоли" << endl;
+        return EXIT_FAILURE;
+    }
+#else
+    // Регистрация обработчика сигналов для Linux
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    signal(SIGQUIT, signalHandler);
+    signal(SIGHUP, signalHandler);
+    signal(SIGKILL, signalHandler);
+    signal(SIGSTOP, signalHandler);
+#endif
 
     crow::SimpleApp app;
 
@@ -183,7 +241,27 @@ int main(int argc, char* argv[]) {
             cout << "Поймали ошибку" << endl;
             return crow::response{400, "Неправильный формат JSON"};
         }
-    });
+    });  
 
-   app.bindaddr(host).port(port).multithreaded().run();
+   // Таймер для периодического сохранения данных galaxy в файл
+    auto saveTimer = [&]() {
+        while (true) {
+            // Сохраняем galaxy в файл "galaxy.json"
+            cout << "Сохраняем galaxy в файл galaxy.json через Job";
+            saveGalaxyToFile(galaxy);
+            // Засыпаем на 5 минут
+            this_thread::sleep_for(chrono::minutes(5));
+        }
+    };
+
+    // Запускаем таймер в отдельном потоке
+    thread saveThread(saveTimer);
+
+    // Запускаем приложение
+    app.bindaddr(host).port(port).multithreaded().run();
+
+    // Дожидаемся завершения работы таймера
+    saveThread.join();
+
+    return 0;
 }
