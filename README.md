@@ -2,6 +2,7 @@
 
 <a href="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml"><img src="https://github.com/MikePuzanov/JSON-language/actions/workflows/cmake.yml/badge.svg?branch=master" alt="Build Status"></a>
 
+Репозитирий предоставляет сервер для записи и получение различной информации в виде JSON, а также библиотеку для интеграции с сервером и локольного взаимодействия с информацией в виде JSON.
 
 ## Cервер
 
