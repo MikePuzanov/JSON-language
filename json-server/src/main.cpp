@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 
+
 using namespace std;
 using namespace nlohmann;
 json galaxy;
@@ -31,16 +32,16 @@ json loadConfig(const string& configFile) {
     }
 }
 
-// Функция для сохранения данных galaxy в файл
+// Г”ГіГ­ГЄГ¶ГЁГї Г¤Г«Гї Г±Г®ГµГ°Г Г­ГҐГ­ГЁГї Г¤Г Г­Г­Г»Гµ galaxy Гў ГґГ Г©Г«
 void saveGalaxyToFile(const json& galaxy) {
     ofstream file(galaxyFileName);
     if (file.is_open()) {
         lock_guard<mutex> lock(fileMutex);
-        file << galaxy.dump(4); // Записываем отформатированный JSON с отступами в 4 пробела
+        file << galaxy.dump(4); // Г‡Г ГЇГЁГ±Г»ГўГ ГҐГ¬ Г®ГІГґГ®Г°Г¬Г ГІГЁГ°Г®ГўГ Г­Г­Г»Г© JSON Г± Г®ГІГ±ГІГіГЇГ Г¬ГЁ Гў 4 ГЇГ°Г®ГЎГҐГ«Г 
         file.close();
-        cout << "Данные сохранены в файл " << galaxyFileName << endl;
+        cout << "Г„Г Г­Г­Г»ГҐ Г±Г®ГµГ°Г Г­ГҐГ­Г» Гў ГґГ Г©Г« " << galaxyFileName << endl;
     } else {
-        cerr << "Ошибка при открытии файла " << galaxyFileName << " для записи." << endl;
+        cerr << "ГЋГёГЁГЎГЄГ  ГЇГ°ГЁ Г®ГІГЄГ°Г»ГІГЁГЁ ГґГ Г©Г«Г  " << galaxyFileName << " Г¤Г«Гї Г§Г ГЇГЁГ±ГЁ." << endl;
     }
 }
 
@@ -56,14 +57,14 @@ json processGet(const json& query) {
                     result = result[step.get<size_t>()];
                 }
                 else {
-                    throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
+                    throw IndexException("Г‚Г»ГµГ®Г¤ Г§Г  Г°Г Г¬ГҐГ°Г» Г¬Г Г±Г±ГЁГўГ . MГ Г±Г±ГЁГў: " + result.dump());
                 }
             } else {
-                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
+                throw IsNotArrayException("Г„Г«Гї ГўГ»ГЎГ®Г°Г  Гў Г¬Г Г±Г±ГЁГўГҐ Г­ГіГ¦ГҐГ­ Г·ГЁГ±Г«Г®ГўГ®Г© ГЁГ­Г¤ГҐГЄГ±. MГ Г±Г±ГЁГў: " + result.dump());
             }
         } else {
-            // Если условия не выполнились, возвращаем ошибку
-            throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
+            // Г…Г±Г«ГЁ ГіГ±Г«Г®ГўГЁГї Г­ГҐ ГўГ»ГЇГ®Г«Г­ГЁГ«ГЁГ±Гј, ГўГ®Г§ГўГ°Г Г№Г ГҐГ¬ Г®ГёГЁГЎГЄГі
+            throw NotFoundDataException("ГЌГҐГІ ГІГ ГЄГ®ГЈГ® ГЇГ®Г«Гї. ГЏГ®Г«ГҐ: " + step.dump());
         }
     }
 
@@ -91,22 +92,22 @@ void processAdd(const json& command, const json& result) {
                 currentLevel = &(*currentLevel)[index];
             }
         } else {
-            // Некорректный путь, возвращаем ошибку
-            cerr << "Error: Неверная команда" << endl;
-            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
+            // ГЌГҐГЄГ®Г°Г°ГҐГЄГІГ­Г»Г© ГЇГіГІГј, ГўГ®Г§ГўГ°Г Г№Г ГҐГ¬ Г®ГёГЁГЎГЄГі
+            cerr << "Error: ГЌГҐГўГҐГ°Г­Г Гї ГЄГ®Г¬Г Г­Г¤Г " << endl;
+            throw InvalidJSONFormatException("ГЌГҐГўГҐГ°Г­Г»Г© ГґГ®Г°Г¬Г ГІ JSON. Error: ГЌГҐГўГҐГ°Г­Г Гї ГЄГ®Г¬Г Г­Г¤Г  " + step.dump());
         }
     }
 
     *currentLevel = result;
 }
 
-// Обработчик сигнала завершения
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±ГЁГЈГ­Г Г«Г  Г§Г ГўГҐГ°ГёГҐГ­ГЁГї
 // void signalHandler(int signal) {
-//      cout << "Вызван сигнал завершения. Сохранение данных и завершение программы." << endl;
+//      cout << "Г‚Г»Г§ГўГ Г­ Г±ГЁГЈГ­Г Г« Г§Г ГўГҐГ°ГёГҐГ­ГЁГї. Г‘Г®ГµГ°Г Г­ГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ ГЁ Г§Г ГўГҐГ°ГёГҐГ­ГЁГҐ ГЇГ°Г®ГЈГ°Г Г¬Г¬Г»." << endl;
 //     if (signal == SIGINT || signal == SIGTERM) {
-//         // Действия при получении сигнала завершения
-//         cout << "Получен сигнал завершения. Сохранение данных и завершение программы." << endl;
-//         // Сохраняем данные перед завершением
+//         // Г„ГҐГ©Г±ГІГўГЁГї ГЇГ°ГЁ ГЇГ®Г«ГіГ·ГҐГ­ГЁГЁ Г±ГЁГЈГ­Г Г«Г  Г§Г ГўГҐГ°ГёГҐГ­ГЁГї
+//         cout << "ГЏГ®Г«ГіГ·ГҐГ­ Г±ГЁГЈГ­Г Г« Г§Г ГўГҐГ°ГёГҐГ­ГЁГї. Г‘Г®ГµГ°Г Г­ГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ ГЁ Г§Г ГўГҐГ°ГёГҐГ­ГЁГҐ ГЇГ°Г®ГЈГ°Г Г¬Г¬Г»." << endl;
+//         // Г‘Г®ГµГ°Г Г­ГїГҐГ¬ Г¤Г Г­Г­Г»ГҐ ГЇГҐГ°ГҐГ¤ Г§Г ГўГҐГ°ГёГҐГ­ГЁГҐГ¬
 //         saveGalaxyToFile(galaxy);
 //         exit(signal);
 //     }
@@ -115,7 +116,7 @@ void processAdd(const json& command, const json& result) {
 #ifdef _WIN32
 #include <Windows.h>
 
-// Обработчик событий консоли для Windows
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±Г®ГЎГ»ГІГЁГ© ГЄГ®Г­Г±Г®Г«ГЁ Г¤Г«Гї Windows
 BOOL WINAPI ConsoleHandler(DWORD signal) {
     switch (signal) {
         case CTRL_C_EVENT:
@@ -123,8 +124,8 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
         case CTRL_CLOSE_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         case CTRL_LOGOFF_EVENT:
-            // Обработка события
-            cout << "Вызван обработчик сигнала " << signal << endl;
+            // ГЋГЎГ°Г ГЎГ®ГІГЄГ  Г±Г®ГЎГ»ГІГЁГї
+            cout << "Г‚Г»Г§ГўГ Г­ Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±ГЁГЈГ­Г Г«Г  " << signal << endl;
             saveGalaxyToFile(galaxy);
             exit(signal);
         default:
@@ -134,10 +135,10 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
 #else
 #include <unistd.h>
 
-// Обработчик сигналов для Linux
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±ГЁГЈГ­Г Г«Г®Гў Г¤Г«Гї Linux
 void signalHandler(int signal) {
-    // Обработка сигнала
-    cout << "Вызван обработчик сигнала " << signal << endl;
+    // ГЋГЎГ°Г ГЎГ®ГІГЄГ  Г±ГЁГЈГ­Г Г«Г 
+    cout << "Г‚Г»Г§ГўГ Г­ Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄ Г±ГЁГЈГ­Г Г«Г  " << signal << endl;
     saveGalaxyToFile(galaxy);
     exit(signal);
 }
@@ -162,13 +163,13 @@ int main(int argc, char* argv[]) {
     saveGalaxyToFile(galaxy);
 
     #ifdef _WIN32
-    // Регистрация обработчика консоли для Windows
+    // ГђГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄГ  ГЄГ®Г­Г±Г®Г«ГЁ Г¤Г«Гї Windows
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-        cerr << "Ошибка при регистрации обработчика консоли" << endl;
+        cerr << "ГЋГёГЁГЎГЄГ  ГЇГ°ГЁ Г°ГҐГЈГЁГ±ГІГ°Г Г¶ГЁГЁ Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄГ  ГЄГ®Г­Г±Г®Г«ГЁ" << endl;
         return EXIT_FAILURE;
     }
 #else
-    // Регистрация обработчика сигналов для Linux
+    // ГђГҐГЈГЁГ±ГІГ°Г Г¶ГЁГї Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄГ  Г±ГЁГЈГ­Г Г«Г®Гў Г¤Г«Гї Linux
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     signal(SIGQUIT, signalHandler);
@@ -179,12 +180,12 @@ int main(int argc, char* argv[]) {
 
     crow::SimpleApp app;
 
-    // Обработчик GET запроса по пути /get
+    // ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ GET Г§Г ГЇГ°Г®Г±Г  ГЇГ® ГЇГіГІГЁ /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << endl << "Старт запроса Get" << endl;
+            cout << endl << endl << "Г‘ГІГ Г°ГІ Г§Г ГЇГ°Г®Г±Г  Get" << endl;
             auto jsonRequest = json::parse(req.body);
-            cout << "Тело запроса " + jsonRequest.dump() << endl;
+            cout << "Г’ГҐГ«Г® Г§Г ГЇГ°Г®Г±Г  " + jsonRequest.dump() << endl;
 
 
             if (jsonRequest.empty()) {
@@ -194,9 +195,9 @@ int main(int argc, char* argv[]) {
             if (jsonRequest.is_array() || jsonRequest.is_object()) {
                 lock_guard<mutex> lock(galaxyMutex);
 
-                cout << "Переход в функцию" << endl;
+                cout << "ГЏГҐГ°ГҐГµГ®Г¤ Гў ГґГіГ­ГЄГ¶ГЁГѕ" << endl;
                 json result = processGet(jsonRequest);
-                cout << "Конец функции" << endl;
+                cout << "ГЉГ®Г­ГҐГ¶ ГґГіГ­ГЄГ¶ГЁГЁ" << endl;
 
                 if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {    
                     return crow::response{404, result.dump()};
@@ -204,75 +205,75 @@ int main(int argc, char* argv[]) {
                     return crow::response{200, result.dump()};
                 }
             } else {
-                // Если запрос не является массивом или объектом, возвращаем ошибку
-                return crow::response{400, "Неправильный формат JSON"};
+                // Г…Г±Г«ГЁ Г§Г ГЇГ°Г®Г± Г­ГҐ ГїГўГ«ГїГҐГІГ±Гї Г¬Г Г±Г±ГЁГўГ®Г¬ ГЁГ«ГЁ Г®ГЎГєГҐГЄГІГ®Г¬, ГўГ®Г§ГўГ°Г Г№Г ГҐГ¬ Г®ГёГЁГЎГЄГі
+                return crow::response{400, "ГЌГҐГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГґГ®Г°Г¬Г ГІ JSON"};
             }
         } catch (const IndexException& e) {
-            cout << "Поймали ошибку IndexException." << endl;
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі IndexException." << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const IsNotArrayException& e) {
-            cout << "Поймали ошибку IsNotArrayException." << endl;
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі IsNotArrayException." << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const NotFoundDataException& e) {
-            cout << "Поймали ошибку NotFoundDataException." << endl;
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі NotFoundDataException." << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку." << endl;
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі." << endl;
             cerr <<  e.what();
-            // Если произошла ошибка при парсинге JSON, возвращаем ошибку
-            return crow::response{400, e.what()};//"Неправильный формат JSON"};
+            // Г…Г±Г«ГЁ ГЇГ°Г®ГЁГ§Г®ГёГ«Г  Г®ГёГЁГЎГЄГ  ГЇГ°ГЁ ГЇГ Г°Г±ГЁГ­ГЈГҐ JSON, ГўГ®Г§ГўГ°Г Г№Г ГҐГ¬ Г®ГёГЁГЎГЄГі
+            return crow::response{400, e.what()};//"ГЌГҐГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГґГ®Г°Г¬Г ГІ JSON"};
         }
     });
 
-    // Эндпоинт для создания/обновления объекта JSON по указателю
+    // ГќГ­Г¤ГЇГ®ГЁГ­ГІ Г¤Г«Гї Г±Г®Г§Г¤Г Г­ГЁГї/Г®ГЎГ­Г®ГўГ«ГҐГ­ГЁГї Г®ГЎГєГҐГЄГІГ  JSON ГЇГ® ГіГЄГ Г§Г ГІГҐГ«Гѕ
     CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
         try {
             auto jsonRequest = json::parse(req.body);
-            cout << "Тело запроса " + jsonRequest.dump() << endl;
+            cout << "Г’ГҐГ«Г® Г§Г ГЇГ°Г®Г±Г  " + jsonRequest.dump() << endl;
             
             if (jsonRequest.is_array()) {
                 if (jsonRequest.size() != 2) {
-                    throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
+                    throw InvalidJSONFormatException("Г’ГҐГ«Г® Г§Г ГЇГ°Г®Г±Г  Г¤Г®Г«Г¦Г­Г® Г±Г®Г¤ГҐГ°Г¦Г ГІГј Г¬Г Г±Г±ГЁГў ГЁГ§ 2 ГЅГ«ГҐГ¬ГҐГ­ГІГ®Гў. Г’ГҐГ«Г® = " + jsonRequest.dump());
                 }
                 lock_guard<mutex> lock(galaxyMutex);
-                cout << "Переход в функцию записи" << endl;
+                cout << "ГЏГҐГ°ГҐГµГ®Г¤ Гў ГґГіГ­ГЄГ¶ГЁГѕ Г§Г ГЇГЁГ±ГЁ" << endl;
                 processAdd(jsonRequest[0], jsonRequest[1]);           
-                cout << "Конец функции записи" << endl;
+                cout << "ГЉГ®Г­ГҐГ¶ ГґГіГ­ГЄГ¶ГЁГЁ Г§Г ГЇГЁГ±ГЁ" << endl;
                 return crow::response{200, "Success"};
             } else {
-                return crow::response{400, "Неправильный формат JSON"};
+                return crow::response{400, "ГЌГҐГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГґГ®Г°Г¬Г ГІ JSON"};
             }
         } catch (const InvalidJSONFormatException& e) {
-            cout << "Поймали ошибку InvalidJSONFormatException." << endl;
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі InvalidJSONFormatException." << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку" << endl;
-            return crow::response{400, "Неправильный формат JSON"};
+            cout << "ГЏГ®Г©Г¬Г Г«ГЁ Г®ГёГЁГЎГЄГі" << endl;
+            return crow::response{400, "ГЌГҐГЇГ°Г ГўГЁГ«ГјГ­Г»Г© ГґГ®Г°Г¬Г ГІ JSON"};
         }
     });  
 
-   // Таймер для периодического сохранения данных galaxy в файл
+   // Г’Г Г©Г¬ГҐГ° Г¤Г«Гї ГЇГҐГ°ГЁГ®Г¤ГЁГ·ГҐГ±ГЄГ®ГЈГ® Г±Г®ГµГ°Г Г­ГҐГ­ГЁГї Г¤Г Г­Г­Г»Гµ galaxy Гў ГґГ Г©Г«
     auto saveTimer = [&]() {
         while (true) {
-            // Сохраняем galaxy в файл "galaxy.json"
-            cout << "Сохраняем galaxy в файл galaxy.json через Job";
+            // Г‘Г®ГµГ°Г Г­ГїГҐГ¬ galaxy Гў ГґГ Г©Г« "galaxy.json"
+            cout << "Г‘Г®ГµГ°Г Г­ГїГҐГ¬ galaxy Гў ГґГ Г©Г« galaxy.json Г·ГҐГ°ГҐГ§ Job";
             saveGalaxyToFile(galaxy);
-            // Засыпаем на 5 минут
+            // Г‡Г Г±Г»ГЇГ ГҐГ¬ Г­Г  5 Г¬ГЁГ­ГіГІ
             this_thread::sleep_for(chrono::minutes(5));
         }
     };
 
-    // Запускаем таймер в отдельном потоке
+    // Г‡Г ГЇГіГ±ГЄГ ГҐГ¬ ГІГ Г©Г¬ГҐГ° Гў Г®ГІГ¤ГҐГ«ГјГ­Г®Г¬ ГЇГ®ГІГ®ГЄГҐ
     thread saveThread(saveTimer);
 
-    // Запускаем приложение
+    // Г‡Г ГЇГіГ±ГЄГ ГҐГ¬ ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГҐ
     app.bindaddr(host).port(port).multithreaded().run();
 
-    // Дожидаемся завершения работы таймера
+    // Г„Г®Г¦ГЁГ¤Г ГҐГ¬Г±Гї Г§Г ГўГҐГ°ГёГҐГ­ГЁГї Г°Г ГЎГ®ГІГ» ГІГ Г©Г¬ГҐГ°Г 
     saveThread.join();
 
     return 0;
