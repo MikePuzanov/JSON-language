@@ -100,18 +100,6 @@ void processAdd(const json& command, const json& result) {
     *currentLevel = result;
 }
 
-// Обработчик сигнала завершения
-// void signalHandler(int signal) {
-//      cout << "Вызван сигнал завершения. Сохранение данных и завершение программы." << endl;
-//     if (signal == SIGINT || signal == SIGTERM) {
-//         // Действия при получении сигнала завершения
-//         cout << "Получен сигнал завершения. Сохранение данных и завершение программы." << endl;
-//         // Сохраняем данные перед завершением
-//         saveGalaxyToFile(galaxy);
-//         exit(signal);
-//     }
-// }
-
 #ifdef _WIN32
 #include <Windows.h>
 
