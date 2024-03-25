@@ -145,10 +145,6 @@ int main(int argc, char* argv[]) {
         port = stoi(argv[2]);
     }
 
-    galaxy = { { "afsafsdfsdf", "afwa14214214214fwar"} };
-
-    saveGalaxyToFile(galaxy);
-
     #ifdef _WIN32
     // Регистрация обработчика консоли для Windows
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
