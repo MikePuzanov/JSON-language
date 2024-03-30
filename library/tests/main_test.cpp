@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-const std::string url = "http://0.0.0.0:8080";
+const std::string url = "http://127.0.0.1:4000";
 
 TEST_CASE("Invalid JSON in add function") {
     JsonLanguage library;
@@ -178,10 +178,17 @@ TEST_CASE("SERVER TEST: No array Exception", "[no_array_exception]") {
         json = { url, "v"};
         library.get(json);
 
+        json = {{ url }, {}};
+        library.add(json);
+
         FAIL("No exception was thrown");
     } catch (const IsNotArrayServerException& e) {
+        json = {{ url }, {}};
+        library.add(json);
         // Тип исключения верен, утверждение успешно
     } catch (...) {
+        json = {{ url }, {}};
+        library.add(json);
         FAIL("Unexpected exception was thrown");
     }
 }
