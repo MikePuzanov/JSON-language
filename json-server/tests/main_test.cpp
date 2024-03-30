@@ -93,6 +93,9 @@ TEST_CASE("No array Exception", "[no_array_exception]") {
 
     auto response = client.Post("/get", getRequest.dump(), "application/json");
 
+    addRequest = {{}, {}};
+    client.Post("/add", addRequest.dump(), "application/json");
+
     REQUIRE(response);
     REQUIRE(response->status == 400);
 }
