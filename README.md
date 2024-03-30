@@ -109,7 +109,7 @@ curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://your-ser
 
 #### Тестирование
 
-1. Запустите cервер, смотрите [раздел Сервер](#ЗапускСерверLinux).
+1. Запустите cервер, смотрите [раздел Сервер](https://github.com/MikePuzanov/JSON-language?tab=readme-ov-file#запуск-в-данном-запуске-используются-данные-из-файла-serverconfigjson).
 2. Откройте еще одно окно терминала
 3. Убедитесь, что вы создали директорию для сборки проекта и перешли в нее, находясь в library: `mkdir build && cd build`
 4. Убедитесь, что вы уже собрали проект: `cmake .. && make`
@@ -128,7 +128,7 @@ curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://your-ser
 
 #### Тестирование
 
-1. Запустите cервер, смотрите [раздел Сервер](#ЗапускСерверWindows).
+1. Запустите cервер, смотрите [раздел Сервер](https://github.com/MikePuzanov/JSON-language?tab=readme-ov-file#запуск-в-данном-запуске-используются-данные-из-файла-serverconfigjson-1).
 2. Откройте еще одно окно терминала
 3. Убедитесь, что вы создали директорию для сборки проекта и перешли в нее, находясь в library: `mkdir build`,`cd build`
 4. Убедитесь, что вы уже собрали проект:: `cmake ..`, `cmake --build .`
