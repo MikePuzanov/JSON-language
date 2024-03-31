@@ -15,16 +15,32 @@ json galaxy;
 mutex galaxyMutex;
 mutex fileMutex;
 const string galaxyFileName = "galaxy.json";
+const string configFileName = "serverConfig.json";
 
-json loadConfig(const string& configFile) {
+json loadConfig() {
     try {
-        ifstream file(configFile);
+        ifstream file(configFileName);
         if (!file.is_open()) {
-            throw runtime_error("Failed to open config file: " + configFile);
+            throw runtime_error("Failed to open config file: " + configFileName);
         }
         json config;
         file >> config;
         return config;
+    }
+    catch (const exception& e) {
+        cerr << e.what(); 
+    }
+}
+
+void loadDataFromGalaxyJson() {
+    try {
+        ifstream file(galaxyFileName);
+        if (!file.is_open()) {
+            throw runtime_error("Failed to open config file: " + galaxyFileName);
+        }
+        json galaxy;
+        file >> galaxy;
+        return;
     }
     catch (const exception& e) {
         cerr << e.what(); 
@@ -137,7 +153,7 @@ int main(int argc, char* argv[]) {
     int port = 0;
     cout << argc;
     if (argc != 3) {
-        json config = loadConfig("serverConfig.json");
+        json config = loadConfig();
         host = config["ip"];
         port = config["port"];
     } else {
