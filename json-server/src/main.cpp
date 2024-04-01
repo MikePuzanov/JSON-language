@@ -55,7 +55,7 @@ void saveGalaxyToFile(const json& galaxy) {
         lock_guard<mutex> lock(fileMutex);
         file << galaxy.dump(4); // Записываем отформатированный JSON с отступами в 4 пробела
         file.close();
-        cout << "Данные сохранены в файл " << galaxyFileName << endl;
+        cout << endl << "Данные сохранены в файл " << galaxyFileName << endl;
     } else {
         cerr << "Ошибка при открытии файла " << galaxyFileName << " для записи." << endl;
     }
