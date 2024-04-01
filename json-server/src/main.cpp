@@ -38,8 +38,9 @@ void loadDataFromGalaxyJson() {
         if (!file.is_open()) {
             throw runtime_error("Failed to open config file: " + galaxyFileName);
         }
-        json galaxy;
-        file >> galaxy;
+        
+        galaxy = json::parse(file);
+        file.close();
         return;
     }
     catch (const exception& e) {
@@ -54,7 +55,7 @@ void saveGalaxyToFile(const json& galaxy) {
         lock_guard<mutex> lock(fileMutex);
         file << galaxy.dump(4); // Записываем отформатированный JSON с отступами в 4 пробела
         file.close();
-        cout << "Данные сохранены в файл " << galaxyFileName << endl;
+        cout << endl << "Данные сохранены в файл " << galaxyFileName << endl;
     } else {
         cerr << "Ошибка при открытии файла " << galaxyFileName << " для записи." << endl;
     }
@@ -62,7 +63,6 @@ void saveGalaxyToFile(const json& galaxy) {
 
 json processGet(const json& query) {
     json result = galaxy;
-    cout << "Galaxy - " + galaxy.dump() << endl;
     for (const auto& step : query) {
         if (result.is_object() && step.is_string() && result.find(step.get<string>()) != result.end()) {
            result = result.at(step.get<string>());
@@ -161,6 +161,8 @@ int main(int argc, char* argv[]) {
         port = stoi(argv[2]);
     }
 
+    loadDataFromGalaxyJson();
+
     #ifdef _WIN32
     // Регистрация обработчика консоли для Windows
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
@@ -182,7 +184,7 @@ int main(int argc, char* argv[]) {
     // Обработчик GET запроса по пути /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << endl << "Старт запроса Get" << endl;
+            cout << endl << "Старт запроса Get" << endl;
             auto jsonRequest = json::parse(req.body);
             cout << "Тело запроса " + jsonRequest.dump() << endl;
 
@@ -208,19 +210,19 @@ int main(int argc, char* argv[]) {
                 return crow::response{400, "Неправильный формат JSON"};
             }
         } catch (const IndexException& e) {
-            cout << "Поймали ошибку IndexException." << endl;
+            cout << "Поймали ошибку IndexException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const IsNotArrayException& e) {
-            cout << "Поймали ошибку IsNotArrayException." << endl;
+            cout << "Поймали ошибку IsNotArrayException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const NotFoundDataException& e) {
-            cout << "Поймали ошибку NotFoundDataException." << endl;
+            cout << "Поймали ошибку NotFoundDataException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку." << endl;
+            cout << "Поймали ошибку. " << e.what() << endl;
             cerr <<  e.what();
             // Если произошла ошибка при парсинге JSON, возвращаем ошибку
             return crow::response{400, e.what()};//"Неправильный формат JSON"};
@@ -230,6 +232,7 @@ int main(int argc, char* argv[]) {
     // Эндпоинт для создания/обновления объекта JSON по указателю
     CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
         try {
+            cout << endl << "Старт запроса Add" << endl;
             auto jsonRequest = json::parse(req.body);
             cout << "Тело запроса " + jsonRequest.dump() << endl;
             
@@ -246,11 +249,11 @@ int main(int argc, char* argv[]) {
                 return crow::response{400, "Неправильный формат JSON"};
             }
         } catch (const InvalidJSONFormatException& e) {
-            cout << "Поймали ошибку InvalidJSONFormatException." << endl;
+            cout << "Поймали ошибку InvalidJSONFormatException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку" << endl;
+            cout << "Поймали ошибку. " << e.what() << endl;
             return crow::response{400, "Неправильный формат JSON"};
         }
     });  
@@ -258,11 +261,11 @@ int main(int argc, char* argv[]) {
    // Таймер для периодического сохранения данных galaxy в файл
     auto saveTimer = [&]() {
         while (true) {
+            this_thread::sleep_for(chrono::minutes(5));
             // Сохраняем galaxy в файл "galaxy.json"
-            cout << "Сохраняем galaxy в файл galaxy.json через Job";
+            cout << "Сохраняем galaxy в файл galaxy.json через Job" << endl;
             saveGalaxyToFile(galaxy);
             // Засыпаем на 5 минут
-            this_thread::sleep_for(chrono::minutes(5));
         }
     };
 
