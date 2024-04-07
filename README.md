@@ -88,7 +88,7 @@ new_value - это значение, которое будет присвоен�
 Пример:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '[["one"], [1, "zs", {"v":"ret","hl":1}]]' http://your-server-address/add
+curl -X POST -H "Content-Type: application/json" -d '[["one"], [1, "zs", {"v":"ret","hl":1}]]' http://127.0.0.1:4000/add
 ```
 
 В данном примере видно, что `path_in_galaxy = ["one"]`, значит будет добавлен или изменен ключ "one". Новым значением ключа "one" будет `new_value = [1, "zs", {"v":"ret","hl":1}][1, "zs", {"v":"ret","hl":1}]`.
@@ -118,7 +118,7 @@ path_in_galaxy - это массив [], в котором описываетс�
 Пример:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://your-server-address/get
+curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://127.0.0.1:4000/get
 ```
 
 В прошлом примере добавили запись 
