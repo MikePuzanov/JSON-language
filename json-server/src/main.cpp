@@ -18,8 +18,8 @@ mutex fileMutex;
 const string galaxyFileNameWindows = "galaxy.json";
 const string configFileNameWindows = "serverConfig.json";
 // Const Ubuntu dev/testing
-const string galaxyFileNameUbuntu = "/usr/bin/jsonServer/galaxy.json";
-const string configFileNameUbuntu = "/usr/bin/jsonServer/serverConfig.json";
+const string galaxyFileNameUbuntu = "galaxy.json";
+const string configFileNameUbuntu = "serverConfig.json";
 // Const Ubuntu for .deb pack 
 //const string galaxyFileNameUbuntu = "/usr/bin/jsonServer/galaxy.json";
 //const string configFileNameUbuntu = "/usr/bin/jsonServer/serverConfig.json";
