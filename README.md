@@ -133,6 +133,17 @@ curl -X POST -H "Content-Type: application/json" -d '["one", 2]' http://127.0.0.
 
 В итоге получаем от сервера ответ: `{"v":"ret","hl":1}`
 
+### Как очистить галактик с помощью JSON-запроса
+
+Чтобы очистить галактик, отправьте POST-запрос на эндпоинт `/add`. 
+
+POST-запрос на эндпоинт `/add`:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '[[], null]' http://127.0.0.1:4000/add
+```
+
+
 ### Postman
 Также для отправки запросов можно использовать удобную утилиту Postman.
 
