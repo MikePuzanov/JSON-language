@@ -137,7 +137,7 @@ void processAdd(const json& command, const json& result) {
         } else {
             // ������������ ����, ���������� ������
             cerr << "Error: Invalid JSON format" << endl;
-            throw InvalidJSONFormatException("Invalid JSON format. Key: " + step.dump());
+            throw InvalidJSONFormatException("Error: Invalid JSON format. Key: " + step.dump());
         }
     }
 
