@@ -1,9 +1,9 @@
-#include <catch2/catch_all.hpp>// подключаем Catch2
+#include <catch2/catch_all.hpp>// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ Catch2
 #include "JsonLanguage.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-const std::string url = "http://127.0.0.1:4000";
+const std::string url = "http://0.0.0.0:8080";
 
 TEST_CASE("Invalid JSON in add function") {
     JsonLanguage library;
@@ -14,7 +14,7 @@ TEST_CASE("Invalid JSON in add function") {
 
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -44,7 +44,7 @@ TEST_CASE("LOCAL TEST: Get JSON Request with Nonexistent Key", "[get_nonexistent
         library.get(getRequest);
         FAIL("No exception was thrown");
     } catch (const NotFoundDataException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -61,7 +61,7 @@ TEST_CASE("LOCAL TEST: Invalid JSON Format Request", "[invalid_json_format]") {
         library.add(json);
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -79,7 +79,7 @@ TEST_CASE("LOCAL TEST: Index Exception", "[index_exception]") {
         library.get(json);
         FAIL("No exception was thrown");
     } catch (const IndexException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -99,7 +99,7 @@ TEST_CASE("LOCAL TEST: No array Exception", "[no_array_exception]") {
 
         FAIL("No exception was thrown");
     } catch (const IsNotArrayException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -127,7 +127,7 @@ TEST_CASE("SERVER TEST: Get JSON Request with Nonexistent Key", "[get_nonexisten
         library.get(getRequest);
         FAIL("No exception was thrown");
     } catch (const NotFoundDataServerException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -142,7 +142,7 @@ TEST_CASE("SERVER TEST: Invalid JSON Format Request", "[invalid_json_format]") {
         library.add(json);
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -160,7 +160,7 @@ TEST_CASE("SERVER TEST: Index Exception", "[index_exception]") {
         library.get(json);
         FAIL("No exception was thrown");
     } catch (const IndexServerException& e) {
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -185,7 +185,7 @@ TEST_CASE("SERVER TEST: No array Exception", "[no_array_exception]") {
     } catch (const IsNotArrayServerException& e) {
         json = {{ url }, {}};
         library.add(json);
-        // Тип исключения верен, утверждение успешно
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     } catch (...) {
         json = {{ url }, {}};
         library.add(json);
