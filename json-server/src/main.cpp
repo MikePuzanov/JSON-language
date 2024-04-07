@@ -14,14 +14,27 @@ using namespace nlohmann;
 json galaxy;
 mutex galaxyMutex;
 mutex fileMutex;
-const string galaxyFileName = "galaxy.json";
-const string configFileName = "serverConfig.json";
 
+// Const WINDOWS
+const string galaxyFileNameWindows = "galaxy.json";
+const string configFileNameWindows = "serverConfig.json";
+// Const Ubuntu dev/testing
+const string galaxyFileNameUbuntu = "galaxy.json";
+const string configFileNameUbuntu = "serverConfig.json";
+// Const Ubuntu for .deb pack 
+//const string galaxyFileNameUbuntu = "/usr/bin/jsonServer/galaxy.json";
+//const string configFileNameUbuntu = "/usr/bin/jsonServer/serverConfig.json";
+
+// load coniguration from file
 json loadConfig() {
     try {
-        ifstream file(configFileName);
+#ifdef _WIN32
+        ifstream file(configFileNameWindows);
+#else
+        ifstream file(configFileNameUbuntu);
+#endif
         if (!file.is_open()) {
-            throw runtime_error("Failed to open config file: " + configFileName);
+            throw runtime_error("Failed to open config file: " + configFileNameWindows);
         }
         json config;
         file >> config;
@@ -32,11 +45,16 @@ json loadConfig() {
     }
 }
 
+// load local galaxy from file
 void loadDataFromGalaxyJson() {
     try {
-        ifstream file(galaxyFileName);
+#ifdef _WIN32
+        ifstream file(galaxyFileNameWindows);
+#else
+        ifstream file(galaxyFileNameUbuntu);
+#endif
         if (!file.is_open()) {
-            throw runtime_error("Failed to open config file: " + galaxyFileName);
+            throw runtime_error("Failed to open config file: " + galaxyFileNameWindows);
         }
         
         galaxy = json::parse(file);
@@ -44,23 +62,33 @@ void loadDataFromGalaxyJson() {
         return;
     }
     catch (const exception& e) {
-        cerr << e.what(); 
+        cerr << "Error: " << e.what(); 
     }
 }
 
-// Функция для сохранения данных galaxy в файл
+// save data from galaxy to file
 void saveGalaxyToFile(const json& galaxy) {
-    ofstream file(galaxyFileName);
-    if (file.is_open()) {
+    try {
+#ifdef _WIN32
+        ofstream file(galaxyFileNameWindows);
+#else
+        ofstream file(galaxyFileNameUbuntu);
+#endif
+    
+        if (!file.is_open()) {
+            throw runtime_error("Failed to open config file: " + galaxyFileNameWindows);
+        }
+    
         lock_guard<mutex> lock(fileMutex);
-        file << galaxy.dump(4); // Записываем отформатированный JSON с отступами в 4 пробела
+        file << galaxy.dump(4);         
         file.close();
-        cout << endl << "Данные сохранены в файл " << galaxyFileName << endl;
-    } else {
-        cerr << "Ошибка при открытии файла " << galaxyFileName << " для записи." << endl;
+        cout << endl << "Information: Saved data to " << galaxyFileNameWindows << endl;
+    } catch(const exception& e) {
+        cerr << "Error: " << e.what(); 
     }
 }
 
+// to get data from galaxy
 json processGet(const json& query) {
     json result = galaxy;
     for (const auto& step : query) {
@@ -72,20 +100,20 @@ json processGet(const json& query) {
                     result = result[step.get<size_t>()];
                 }
                 else {
-                    throw IndexException("Выход за рамеры массива. Mассив: " + result.dump());
+                    throw IndexException("Error: Index out of array lenght. Key: " + result.dump());
                 }
             } else {
-                throw IsNotArrayException("Для выбора в массиве нужен числовой индекс. Mассив: " + result.dump());
+                throw IsNotArrayException("Error: To select in an array you need a numeric index. Key: " + result.dump());
             }
         } else {
-            // Если условия не выполнились, возвращаем ошибку
-            throw NotFoundDataException("Нет такого поля. Поле: " + step.dump());
+            throw NotFoundDataException("Error: Not found data. Key: " + step.dump());
         }
     }
 
     return result;
 }
 
+// to add data in galaxy
 void processAdd(const json& command, const json& result) {
     json& current = galaxy;
     json* currentLevel = &current;
@@ -107,9 +135,9 @@ void processAdd(const json& command, const json& result) {
                 currentLevel = &(*currentLevel)[index];
             }
         } else {
-            // Некорректный путь, возвращаем ошибку
-            cerr << "Error: Неверная команда" << endl;
-            throw InvalidJSONFormatException("Неверный формат JSON. Error: Неверная команда " + step.dump());
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+            cerr << "Error: Invalid JSON format" << endl;
+            throw InvalidJSONFormatException("Error: Invalid JSON format. Key: " + step.dump());
         }
     }
 
@@ -119,7 +147,7 @@ void processAdd(const json& command, const json& result) {
 #ifdef _WIN32
 #include <Windows.h>
 
-// Обработчик событий консоли для Windows
+// signal for Windows
 BOOL WINAPI ConsoleHandler(DWORD signal) {
     switch (signal) {
         case CTRL_C_EVENT:
@@ -127,8 +155,7 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
         case CTRL_CLOSE_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         case CTRL_LOGOFF_EVENT:
-            // Обработка события
-            cout << "Вызван обработчик сигнала " << signal << endl;
+            cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
             saveGalaxyToFile(galaxy);
             exit(signal);
         default:
@@ -138,10 +165,9 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
 #else
 #include <unistd.h>
 
-// Обработчик сигналов для Linux
+// signal for Linux
 void signalHandler(int signal) {
-    // Обработка сигнала
-    cout << "Вызван обработчик сигнала " << signal << endl;
+    cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
     saveGalaxyToFile(galaxy);
     exit(signal);
 }
@@ -151,7 +177,7 @@ int main(int argc, char* argv[]) {
     setlocale(LC_ALL, "Russian");
     std::string host = "";
     int port = 0;
-    cout << argc;
+
     if (argc != 3) {
         json config = loadConfig();
         host = config["ip"];
@@ -164,13 +190,13 @@ int main(int argc, char* argv[]) {
     loadDataFromGalaxyJson();
 
     #ifdef _WIN32
-    // Регистрация обработчика консоли для Windows
+    // setup signal for Windows
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-        cerr << "Ошибка при регистрации обработчика консоли" << endl;
+        cerr << "Error: with setup signal habdler" << endl;
         return EXIT_FAILURE;
     }
 #else
-    // Регистрация обработчика сигналов для Linux
+    // setup signal for  Linux
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     signal(SIGQUIT, signalHandler);
@@ -181,12 +207,12 @@ int main(int argc, char* argv[]) {
 
     crow::SimpleApp app;
 
-    // Обработчик GET запроса по пути /get
+    // POST /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << "Старт запроса Get" << endl;
+            cout << endl << "Information: Starting Get" << endl;
             auto jsonRequest = json::parse(req.body);
-            cout << "Тело запроса " + jsonRequest.dump() << endl;
+            cout << "Information: Request: " + jsonRequest.dump() << endl;
 
 
             if (jsonRequest.empty()) {
@@ -196,9 +222,9 @@ int main(int argc, char* argv[]) {
             if (jsonRequest.is_array() || jsonRequest.is_object()) {
                 lock_guard<mutex> lock(galaxyMutex);
 
-                cout << "Переход в функцию" << endl;
+                cout << "Information: Go in get fucntion" << endl;
                 json result = processGet(jsonRequest);
-                cout << "Конец функции" << endl;
+                cout << "Information: Go out from get fucntion" << endl;
 
                 if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {    
                     return crow::response{404, result.dump()};
@@ -206,76 +232,69 @@ int main(int argc, char* argv[]) {
                     return crow::response{200, result.dump()};
                 }
             } else {
-                // Если запрос не является массивом или объектом, возвращаем ошибку
-                return crow::response{400, "Неправильный формат JSON"};
+                return crow::response{400, "Invalid format JSON"};
             }
         } catch (const IndexException& e) {
-            cout << "Поймали ошибку IndexException. " << e.what() << endl;
+            cout << "Information: Catch IndexException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const IsNotArrayException& e) {
-            cout << "Поймали ошибку IsNotArrayException. " << e.what() << endl;
+            cout << "Information: Catch IsNotArrayException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const NotFoundDataException& e) {
-            cout << "Поймали ошибку NotFoundDataException. " << e.what() << endl;
+            cout << "Information: Catch NotFoundDataException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку. " << e.what() << endl;
+            cout << "Information: Catch unknown exception. " << e.what() << endl;
             cerr <<  e.what();
-            // Если произошла ошибка при парсинге JSON, возвращаем ошибку
-            return crow::response{400, e.what()};//"Неправильный формат JSON"};
+            return crow::response{400, e.what()};
         }
     });
 
-    // Эндпоинт для создания/обновления объекта JSON по указателю
+    // POST /add
     CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << "Старт запроса Add" << endl;
+            cout << endl << "Information: Starting Add" << endl;
             auto jsonRequest = json::parse(req.body);
-            cout << "Тело запроса " + jsonRequest.dump() << endl;
+            cout << "Information: Request: " + jsonRequest.dump() << endl;
             
             if (jsonRequest.is_array()) {
                 if (jsonRequest.size() != 2) {
-                    throw InvalidJSONFormatException("Тело запроса должно содержать массив из 2 элементов. Тело = " + jsonRequest.dump());
+                    throw InvalidJSONFormatException("Error: Not valid request body. Request body should be array with two elements. Request: " + jsonRequest.dump());
                 }
                 lock_guard<mutex> lock(galaxyMutex);
-                cout << "Переход в функцию записи" << endl;
+                cout << "Information: Go to add function" << endl;
                 processAdd(jsonRequest[0], jsonRequest[1]);           
-                cout << "Конец функции записи" << endl;
+                cout << "Information: Go out from add function" << endl;
                 return crow::response{200, "Success"};
             } else {
-                return crow::response{400, "Неправильный формат JSON"};
+                return crow::response{400, "Invalid JSON format"};
             }
         } catch (const InvalidJSONFormatException& e) {
-            cout << "Поймали ошибку InvalidJSONFormatException. " << e.what() << endl;
+            cout << "Information: Catch InvalidJSONFormatException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "Поймали ошибку. " << e.what() << endl;
-            return crow::response{400, "Неправильный формат JSON"};
+            cout << "Information: Catch unknown" << e.what() << endl;
+            return crow::response{400, "Invalid JSON format"};
         }
     });  
 
-   // Таймер для периодического сохранения данных galaxy в файл
+   // cron job for saving galaxy in file with 5 min timer
     auto saveTimer = [&]() {
         while (true) {
             this_thread::sleep_for(chrono::minutes(5));
-            // Сохраняем galaxy в файл "galaxy.json"
-            cout << "Сохраняем galaxy в файл galaxy.json через Job" << endl;
+            cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
             saveGalaxyToFile(galaxy);
-            // Засыпаем на 5 минут
         }
     };
 
-    // Запускаем таймер в отдельном потоке
     thread saveThread(saveTimer);
 
-    // Запускаем приложение
     app.bindaddr(host).port(port).multithreaded().run();
 
-    // Дожидаемся завершения работы таймера
     saveThread.join();
 
     return 0;
