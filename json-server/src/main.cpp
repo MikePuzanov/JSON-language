@@ -14,6 +14,7 @@ using namespace nlohmann;
 json galaxy;
 mutex galaxyMutex;
 mutex fileMutex;
+
 // Const WINDOWS
 const string galaxyFileNameWindows = "galaxy.json";
 const string configFileNameWindows = "serverConfig.json";
@@ -24,7 +25,7 @@ const string configFileNameUbuntu = "serverConfig.json";
 //const string galaxyFileNameUbuntu = "/usr/bin/jsonServer/galaxy.json";
 //const string configFileNameUbuntu = "/usr/bin/jsonServer/serverConfig.json";
 
-
+// load coniguration from file
 json loadConfig() {
     try {
 #ifdef _WIN32
@@ -44,6 +45,7 @@ json loadConfig() {
     }
 }
 
+// load local galaxy from file
 void loadDataFromGalaxyJson() {
     try {
 #ifdef _WIN32
@@ -60,28 +62,33 @@ void loadDataFromGalaxyJson() {
         return;
     }
     catch (const exception& e) {
-        cerr << e.what(); 
+        cerr << "Error: " << e.what(); 
     }
 }
 
-// ˜˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ galaxy ˜ ˜˜˜˜
+// save data from galaxy to file
 void saveGalaxyToFile(const json& galaxy) {
+    try {
 #ifdef _WIN32
         ofstream file(galaxyFileNameWindows);
 #else
         ofstream file(galaxyFileNameUbuntu);
 #endif
     
-    if (file.is_open()) {
+        if (!file.is_open()) {
+            throw runtime_error("Failed to open config file: " + galaxyFileNameWindows);
+        }
+    
         lock_guard<mutex> lock(fileMutex);
-        file << galaxy.dump(4); // ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜ JSON ˜ ˜˜˜˜˜˜˜˜˜ ˜ 4 ˜˜˜˜˜˜˜
+        file << galaxy.dump(4);         
         file.close();
-        cout << endl << "˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜ " << galaxyFileNameWindows << endl;
-    } else {
-        cerr << "˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜˜˜ " << galaxyFileNameWindows << " ˜˜˜ ˜˜˜˜˜˜." << endl;
+        cout << endl << "Information: Saved data to " << galaxyFileNameWindows << endl;
+    } catch(const exception& e) {
+        cerr << "Error: " << e.what(); 
     }
 }
 
+// to get data from galaxy
 json processGet(const json& query) {
     json result = galaxy;
     for (const auto& step : query) {
@@ -93,20 +100,20 @@ json processGet(const json& query) {
                     result = result[step.get<size_t>()];
                 }
                 else {
-                    throw IndexException("˜˜˜˜˜ ˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜. M˜˜˜˜˜: " + result.dump());
+                    throw IndexException("Error: Index out of array lenght. Key: " + result.dump());
                 }
             } else {
-                throw IsNotArrayException("˜˜˜ ˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜. M˜˜˜˜˜: " + result.dump());
+                throw IsNotArrayException("Error: To select in an array you need a numeric index. Key: " + result.dump());
             }
         } else {
-            // ˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜ ˜˜˜˜˜˜˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜
-            throw NotFoundDataException("˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜. ˜˜˜˜: " + step.dump());
+            throw NotFoundDataException("Error: Not found data. Key: " + step.dump());
         }
     }
 
     return result;
 }
 
+// to add data in galaxy
 void processAdd(const json& command, const json& result) {
     json& current = galaxy;
     json* currentLevel = &current;
@@ -128,9 +135,9 @@ void processAdd(const json& command, const json& result) {
                 currentLevel = &(*currentLevel)[index];
             }
         } else {
-            // ˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜, ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜
-            cerr << "Error: ˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜" << endl;
-            throw InvalidJSONFormatException("˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ JSON. Error: ˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ " + step.dump());
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            cerr << "Error: Invalid JSON format" << endl;
+            throw InvalidJSONFormatException("Invalid JSON format. Key: " + step.dump());
         }
     }
 
@@ -140,7 +147,7 @@ void processAdd(const json& command, const json& result) {
 #ifdef _WIN32
 #include <Windows.h>
 
-// ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜ Windows
+// signal for Windows
 BOOL WINAPI ConsoleHandler(DWORD signal) {
     switch (signal) {
         case CTRL_C_EVENT:
@@ -148,8 +155,7 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
         case CTRL_CLOSE_EVENT:
         case CTRL_SHUTDOWN_EVENT:
         case CTRL_LOGOFF_EVENT:
-            // ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜
-            cout << "˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ " << signal << endl;
+            cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
             saveGalaxyToFile(galaxy);
             exit(signal);
         default:
@@ -159,10 +165,9 @@ BOOL WINAPI ConsoleHandler(DWORD signal) {
 #else
 #include <unistd.h>
 
-// ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜ Linux
+// signal for Linux
 void signalHandler(int signal) {
-    // ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜
-    cout << "˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ " << signal << endl;
+    cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
     saveGalaxyToFile(galaxy);
     exit(signal);
 }
@@ -185,13 +190,13 @@ int main(int argc, char* argv[]) {
     loadDataFromGalaxyJson();
 
     #ifdef _WIN32
-    // ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜ Windows
+    // setup signal for Windows
     if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-        cerr << "˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜" << endl;
+        cerr << "Error: with setup signal habdler" << endl;
         return EXIT_FAILURE;
     }
 #else
-    // ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜ Linux
+    // setup signal for  Linux
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     signal(SIGQUIT, signalHandler);
@@ -202,12 +207,12 @@ int main(int argc, char* argv[]) {
 
     crow::SimpleApp app;
 
-    // ˜˜˜˜˜˜˜˜˜˜ GET ˜˜˜˜˜˜˜ ˜˜ ˜˜˜˜ /get
+    // POST /get
     CROW_ROUTE(app, "/get").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << "˜˜˜˜˜ ˜˜˜˜˜˜˜ Get" << endl;
+            cout << endl << "Information: Starting Get" << endl;
             auto jsonRequest = json::parse(req.body);
-            cout << "˜˜˜˜ ˜˜˜˜˜˜˜ " + jsonRequest.dump() << endl;
+            cout << "Information: Request: " + jsonRequest.dump() << endl;
 
 
             if (jsonRequest.empty()) {
@@ -217,9 +222,9 @@ int main(int argc, char* argv[]) {
             if (jsonRequest.is_array() || jsonRequest.is_object()) {
                 lock_guard<mutex> lock(galaxyMutex);
 
-                cout << "˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜" << endl;
+                cout << "Information: Go in get fucntion" << endl;
                 json result = processGet(jsonRequest);
-                cout << "˜˜˜˜˜ ˜˜˜˜˜˜˜" << endl;
+                cout << "Information: Go out from get fucntion" << endl;
 
                 if (result.is_object() && result.find("status") != result.end() && result["status"] == "error") {    
                     return crow::response{404, result.dump()};
@@ -227,76 +232,69 @@ int main(int argc, char* argv[]) {
                     return crow::response{200, result.dump()};
                 }
             } else {
-                // ˜˜˜˜ ˜˜˜˜˜˜ ˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜
-                return crow::response{400, "˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ JSON"};
+                return crow::response{400, "Invalid format JSON"};
             }
         } catch (const IndexException& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜ IndexException. " << e.what() << endl;
+            cout << "Information: Catch IndexException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const IsNotArrayException& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜ IsNotArrayException. " << e.what() << endl;
+            cout << "Information: Catch IsNotArrayException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{400, e.what()};
         } catch (const NotFoundDataException& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜ NotFoundDataException. " << e.what() << endl;
+            cout << "Information: Catch NotFoundDataException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜. " << e.what() << endl;
+            cout << "Information: Catch unknown exception. " << e.what() << endl;
             cerr <<  e.what();
-            // ˜˜˜˜ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜ JSON, ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜
-            return crow::response{400, e.what()};//"˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ JSON"};
+            return crow::response{400, e.what()};
         }
     });
 
-    // ˜˜˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜/˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ JSON ˜˜ ˜˜˜˜˜˜˜˜˜
+    // POST /add
     CROW_ROUTE(app, "/add").methods("POST"_method)([](const crow::request& req) {
         try {
-            cout << endl << "˜˜˜˜˜ ˜˜˜˜˜˜˜ Add" << endl;
+            cout << endl << "Information: Starting Add" << endl;
             auto jsonRequest = json::parse(req.body);
-            cout << "˜˜˜˜ ˜˜˜˜˜˜˜ " + jsonRequest.dump() << endl;
+            cout << "Information: Request: " + jsonRequest.dump() << endl;
             
             if (jsonRequest.is_array()) {
                 if (jsonRequest.size() != 2) {
-                    throw InvalidJSONFormatException("˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜ 2 ˜˜˜˜˜˜˜˜˜. ˜˜˜˜ = " + jsonRequest.dump());
+                    throw InvalidJSONFormatException("Error: Not valid request body. Request body should be array with two elements. Request: " + jsonRequest.dump());
                 }
                 lock_guard<mutex> lock(galaxyMutex);
-                cout << "˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜" << endl;
+                cout << "Information: Go to add function" << endl;
                 processAdd(jsonRequest[0], jsonRequest[1]);           
-                cout << "˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜" << endl;
+                cout << "Information: Go out from add function" << endl;
                 return crow::response{200, "Success"};
             } else {
-                return crow::response{400, "˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ JSON"};
+                return crow::response{400, "Invalid JSON format"};
             }
         } catch (const InvalidJSONFormatException& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜ InvalidJSONFormatException. " << e.what() << endl;
+            cout << "Information: Catch InvalidJSONFormatException. " << e.what() << endl;
             cerr <<  e.what();
             return crow::response{404, e.what()};
         } catch (const exception& e) {
-            cout << "˜˜˜˜˜˜˜ ˜˜˜˜˜˜. " << e.what() << endl;
-            return crow::response{400, "˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ JSON"};
+            cout << "Information: Catch unknown" << e.what() << endl;
+            return crow::response{400, "Invalid JSON format"};
         }
     });  
 
-   // ˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ galaxy ˜ ˜˜˜˜
+   // cron job for saving galaxy in file with 5 min timer
     auto saveTimer = [&]() {
         while (true) {
             this_thread::sleep_for(chrono::minutes(5));
-            // ˜˜˜˜˜˜˜˜˜ galaxy ˜ ˜˜˜˜ "galaxy.json"
-            cout << "˜˜˜˜˜˜˜˜˜ galaxy ˜ ˜˜˜˜ galaxy.json ˜˜˜˜˜ Job" << endl;
+            cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
             saveGalaxyToFile(galaxy);
-            // ˜˜˜˜˜˜˜˜ ˜˜ 5 ˜˜˜˜˜
         }
     };
 
-    // ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜
     thread saveThread(saveTimer);
 
-    // ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜
     app.bindaddr(host).port(port).multithreaded().run();
 
-    // ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜
     saveThread.join();
 
     return 0;
