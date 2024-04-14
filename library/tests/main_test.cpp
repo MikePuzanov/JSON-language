@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 
-const std::string url = "http://0.0.0.0:8080";
+const std::string url = "http://127.0.0.1:4000";
 
 TEST_CASE("Invalid JSON in add function") {
     JsonLanguage library;
