@@ -53,12 +53,6 @@ jobs:
         cd build
         cd tests
         ./tests
-
-    - name: Start local server for LIBRARY TESTS
-      run: |
-        cd json-server
-        ./build/json-server 0.0.0.0 8080 &
-        sleep 10
       
     - name: Run library tests
       run: |
