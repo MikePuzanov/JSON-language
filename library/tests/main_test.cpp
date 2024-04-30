@@ -1,9 +1,49 @@
-#include <catch2/catch_all.hpp>// ���������� Catch2
+#include <catch2/catch_all.hpp>
 #include "JsonLanguage.h"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
 const std::string url = "http://127.0.0.1:4000";
+
+TEST_CASE("LOCAL TEST: Delete data from galaaxy", "[delete_data]") {
+    setlocale(LC_ALL, "Russian");
+    JsonLanguage library;
+    library.remove({});
+    nlohmann::json addBody = nlohmann::json::array();
+    nlohmann::json body = nlohmann::json::array();
+    body.push_back("data");
+    addBody.push_back(body);
+    addBody.push_back({
+        {"people", {
+            {"name", "mike"},
+            {"age", "10"}
+        }},
+        {"address", {
+            {"city", "Bgd"},
+            {"street", "Ledonr"}
+        }}
+    });
+    library.add(addBody);
+    
+    nlohmann::json deleteBody = {"data", "people", "name"};
+    library.remove(deleteBody);
+
+    nlohmann::json getBody = {"data"};
+    auto result = library.get(getBody);
+
+    nlohmann::json expectedResult = {
+            {"people", {
+                {"age", "10"}
+            }},
+            {"address", {
+                {"city", "Bgd"},
+                {"street", "Ledonr"}
+            }}
+    };
+
+    REQUIRE(result == expectedResult);
+    library.remove({});
+}
 
 TEST_CASE("Invalid JSON in add function") {
     JsonLanguage library;
@@ -14,7 +54,7 @@ TEST_CASE("Invalid JSON in add function") {
 
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -44,7 +84,7 @@ TEST_CASE("LOCAL TEST: Get JSON Request with Nonexistent Key", "[get_nonexistent
         library.get(getRequest);
         FAIL("No exception was thrown");
     } catch (const NotFoundDataException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -61,9 +101,7 @@ TEST_CASE("LOCAL TEST: Invalid JSON Format Request", "[invalid_json_format]") {
         library.add(json);
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // ��� ���������� �����, ����������� �������
-    } catch (...) {
-        FAIL("Unexpected exception was thrown");
+        // Success
     }
 }
 
@@ -79,7 +117,7 @@ TEST_CASE("LOCAL TEST: Index Exception", "[index_exception]") {
         library.get(json);
         FAIL("No exception was thrown");
     } catch (const IndexException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -99,7 +137,7 @@ TEST_CASE("LOCAL TEST: No array Exception", "[no_array_exception]") {
 
         FAIL("No exception was thrown");
     } catch (const IsNotArrayException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -127,7 +165,7 @@ TEST_CASE("SERVER TEST: Get JSON Request with Nonexistent Key", "[get_nonexisten
         library.get(getRequest);
         FAIL("No exception was thrown");
     } catch (const NotFoundDataServerException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -142,7 +180,7 @@ TEST_CASE("SERVER TEST: Invalid JSON Format Request", "[invalid_json_format]") {
         library.add(json);
         FAIL("No exception was thrown");
     } catch (const InvalidJSONFormatException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -160,7 +198,7 @@ TEST_CASE("SERVER TEST: Index Exception", "[index_exception]") {
         library.get(json);
         FAIL("No exception was thrown");
     } catch (const IndexServerException& e) {
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         FAIL("Unexpected exception was thrown");
     }
@@ -185,10 +223,52 @@ TEST_CASE("SERVER TEST: No array Exception", "[no_array_exception]") {
     } catch (const IsNotArrayServerException& e) {
         json = {{ url }, {}};
         library.add(json);
-        // ��� ���������� �����, ����������� �������
+        // Success
     } catch (...) {
         json = {{ url }, {}};
         library.add(json);
         FAIL("Unexpected exception was thrown");
     }
+}
+
+TEST_CASE("SERVER TEST: Delete data from galaaxy", "[delete_data_server]") {
+    setlocale(LC_ALL, "Russian");
+    JsonLanguage library;
+    library.remove({});
+    nlohmann::json addBody = nlohmann::json::array();
+    nlohmann::json body = nlohmann::json::array();
+    body.push_back(url);
+    body.push_back("data");
+    addBody.push_back(body);
+    addBody.push_back({
+        {"people", {
+            {"name", "mike"},
+            {"age", "10"}
+        }},
+        {"address", {
+            {"city", "Bgd"},
+            {"street", "Ledonr"}
+        }}
+    });
+     cout << endl << addBody.dump() << endl;
+    library.add(addBody);
+    
+    nlohmann::json deleteBody = { url, "data", "people", "name"};
+    library.remove(deleteBody);
+
+    nlohmann::json getBody = { url, "data"};
+    auto result = library.get(getBody);
+
+    nlohmann::json expectedResult = {
+            {"people", {
+                {"age", "10"}
+            }},
+            {"address", {
+                {"city", "Bgd"},
+                {"street", "Ledonr"}
+            }}
+    };
+
+    REQUIRE(result == expectedResult);
+    library.remove({ url });
 }

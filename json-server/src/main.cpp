@@ -135,13 +135,55 @@ void processAdd(const json& command, const json& result) {
                 currentLevel = &(*currentLevel)[index];
             }
         } else {
-            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             cerr << "Error: Invalid JSON format" << endl;
             throw InvalidJSONFormatException("Error: Invalid JSON format. Key: " + step.dump());
         }
     }
 
     *currentLevel = result;
+}
+
+// to delete data from galaxy
+void processDelete(const json& query) {
+    json* result = &galaxy;
+
+    if (query.size() == 0) {
+        *result = json();
+        return;
+    }
+
+    for (const auto& step : query) {
+        if (result->is_object()) {
+            if (step.is_string() && result->find(step.get<string>()) != result->end()) {
+                if (&step == &query.back()) { // Если это последний элемент запроса
+                    result->erase(step.get<string>()); // Удаляем элемент из объекта
+                    return;
+                } else {
+                    result = &((*result)[step.get<string>()]); // Переходим к следующему уровню
+                }
+            } else {
+                throw NotFoundDataException("Error: Not found data. Key: " + step.dump());
+            }
+        } else if (result->is_array()) {
+            if (step.is_number_integer()) {
+                size_t index = step.get<size_t>();
+                if (index >= 0 && index < result->size()) {
+                    if (&step == &query.back()) { // Если это последний элемент запроса
+                        result->erase(result->begin() + index); // Удаляем элемент из массива
+                        return;
+                    } else {
+                        result = &((*result)[index]); // Переходим к следующему уровню
+                    }
+                } else {
+                    throw IndexException("Error: Index out of array length. Key: " + result->dump());
+                }
+            } else {
+                throw IsNotArrayException("Error: To delete from an array you need a numeric index. Key: " + result->dump());
+            }
+        } else {
+            throw NotFoundDataException("Error: Not found data. Key: " + step.dump());
+        }
+    }
 }
 
 #ifdef _WIN32
@@ -214,7 +256,6 @@ int main(int argc, char* argv[]) {
             auto jsonRequest = json::parse(req.body);
             cout << "Information: Request: " + jsonRequest.dump() << endl;
 
-
             if (jsonRequest.empty()) {
                 return crow::response{200, galaxy.dump()};
             }
@@ -268,6 +309,7 @@ int main(int argc, char* argv[]) {
                 cout << "Information: Go to add function" << endl;
                 processAdd(jsonRequest[0], jsonRequest[1]);           
                 cout << "Information: Go out from add function" << endl;
+                
                 return crow::response{200, "Success"};
             } else {
                 return crow::response{400, "Invalid JSON format"};
@@ -280,7 +322,44 @@ int main(int argc, char* argv[]) {
             cout << "Information: Catch unknown" << e.what() << endl;
             return crow::response{400, "Invalid JSON format"};
         }
-    });  
+    });
+
+    // Delete /delete
+    CROW_ROUTE(app, "/delete").methods("DELETE"_method)([](const crow::request& req) {
+        try {
+            cout << endl << "Information: Starting Delete" << endl;
+            auto jsonRequest = json::parse(req.body);
+            cout << "Information: Request: " + jsonRequest.dump() << endl;
+            
+            if (jsonRequest.is_array() || jsonRequest.is_object()) {
+                lock_guard<mutex> lock(galaxyMutex);
+
+                cout << "Information: Go in delete function" << endl;
+                processDelete(jsonRequest);
+                cout << "Information: Go out from delete function" << endl;
+                
+                return crow::response{200, "Success"};
+            } else {
+                return crow::response{400, "Invalid format JSON"};
+            }
+        } catch (const IndexException& e) {
+            cout << "Information: Catch IndexException. " << e.what() << endl;
+            cerr <<  e.what();
+            return crow::response{400, e.what()};
+        } catch (const IsNotArrayException& e) {
+            cout << "Information: Catch IsNotArrayException. " << e.what() << endl;
+            cerr <<  e.what();
+            return crow::response{400, e.what()};
+        } catch (const NotFoundDataException& e) {
+            cout << "Information: Catch NotFoundDataException. " << e.what() << endl;
+            cerr <<  e.what();
+            return crow::response{404, e.what()};
+        } catch (const exception& e) {
+            cout << "Information: Catch unknown exception. " << e.what() << endl;
+            cerr <<  e.what();
+            return crow::response{400, e.what()};
+        }
+    });
 
    // cron job for saving galaxy in file with 5 min timer
     auto saveTimer = [&]() {
