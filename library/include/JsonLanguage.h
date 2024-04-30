@@ -15,14 +15,18 @@ public:
     json get(const json &query);
     // Recording by sequence
     void add(const json& command);
+    // Delete by sequence
+    void remove(const json& command);
 
 private:
     // Local galaxy
     json galaxy;
-    // Local get of information from galaxies
+    // Local get of information from galaxy
     json processGet(const json& query, const json& current);
-    // Local recording of information in galaxies
+    // Local recording of information in galaxy
     void processAdd(const json& command, const json& result);
+    // Local deleting data deom galaxy
+    void processDelete(const json& query);
     // Check string on format URL
     bool isURL(const string &str);
     // Validate response from server
