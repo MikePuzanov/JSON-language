@@ -29,7 +29,9 @@ public:
     void setSignal();
 private:
     //static GalaxyServer* instance;
+#ifdef _WIN32
     static BOOL WINAPI ConsoleHandler(DWORD signal);
+#endif
     static void shutDownWindows();
     void signalHandler(int signal);
 };
