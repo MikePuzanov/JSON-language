@@ -39,3 +39,6 @@
 /library/.vscode
 /library/build
 /library/out
+/teacher-library/.vscode
+/teacher-library/build
+/teacher-library/out

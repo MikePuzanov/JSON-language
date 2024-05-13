@@ -8,6 +8,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(SOURCES
     src/main.cpp
+    src/GalaxyServer.cpp
+    src/RequestHandlers.cpp
 )
 
 include(FetchContent)
@@ -25,7 +27,7 @@ FetchContent_Declare(
 set(FETCHCONTENT_QUIET OFF)
 FetchContent_MakeAvailable(asio)
 
-add_executable(json-server ${SOURCES})
+add_executable(json-server src/main.cpp src/RequestHandlers.cpp src/GalaxyServer.cpp)
 
 target_include_directories(json-server PRIVATE 
     ${nlohmann_json_SOURCE_DIR}/single_include
