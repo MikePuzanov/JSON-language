@@ -1,5 +1,6 @@
 #pragma once
 
+#include <thread>
 #include <nlohmann/json.hpp>
 #ifdef _WIN32
 #include <Windows.h>
@@ -8,6 +9,7 @@
 #endif
 
 using json = nlohmann::json;
+using namespace std;
 
 class GalaxyServer {
 public:
@@ -27,8 +29,13 @@ public:
     void processDelete(const json& query);
     //
     void setSignal();
+    //
+    void addSaveCronJob();
+    //
+    void joinSaveCronThread();
 private:
-    //static GalaxyServer* instance;
+    thread cronThread;
+    
 #ifdef _WIN32
     static BOOL WINAPI ConsoleHandler(DWORD signal);
 #else

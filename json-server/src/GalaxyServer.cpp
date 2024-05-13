@@ -210,6 +210,22 @@ void GalaxyServer::setSignal() {
 #endif
 }
 
+void GalaxyServer::addSaveCronJob() {
+    cronThread = std::thread([this]() {
+        while (true) {
+            this_thread::sleep_for(chrono::minutes(1));
+            cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
+            saveGalaxyToFile();
+        }
+    });
+}
+
+void GalaxyServer::joinSaveCronThread() {
+    if (cronThread.joinable()) {
+        cronThread.join();
+    }
+}
+
 #ifdef _WIN32
 #include <Windows.h>
 
