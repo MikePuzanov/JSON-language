@@ -35,6 +35,7 @@ public:
     void joinSaveCronThread();
 private:
     thread cronThread;
+    int saveCronJobTime;
     
 #ifdef _WIN32
     static BOOL WINAPI ConsoleHandler(DWORD signal);
