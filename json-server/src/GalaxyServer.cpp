@@ -42,6 +42,7 @@ json GalaxyServer::loadConfig() {
         }
         json config;
         file >> config;
+        saveCronJobTime = config["saveCronTimeJob"];
         return config;
     }
     catch (const exception& e) {
@@ -211,18 +212,22 @@ void GalaxyServer::setSignal() {
 }
 
 void GalaxyServer::addSaveCronJob() {
-    cronThread = std::thread([this]() {
+    if (saveCronJobTime != 0) {
+        cronThread = std::thread([this]() {
         while (true) {
-            this_thread::sleep_for(chrono::minutes(1));
+            this_thread::sleep_for(chrono::minutes(saveCronJobTime));
             cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
             saveGalaxyToFile();
         }
     });
+    }
 }
 
 void GalaxyServer::joinSaveCronThread() {
-    if (cronThread.joinable()) {
+    if (saveCronJobTime != 0) {
+        if (cronThread.joinable()) {
         cronThread.join();
+    }
     }
 }
 
