@@ -48,20 +48,22 @@ int main(int argc, char* argv[]) {
         return requestHandler.DeleteHandler(req);
     });
 
+    galaxyServer.addSaveCronJob();
     // cron job for saving galaxy in file with 5 min timer
-    auto saveTimer = [&]() {
-        while (true) {
-            this_thread::sleep_for(chrono::minutes(5));
-            cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
-            galaxyServer.saveGalaxyToFile();
-        }
-    };
+    // auto saveTimer = [&]() {
+    //     while (true) {
+    //         this_thread::sleep_for(chrono::minutes(5));
+    //         cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
+    //         galaxyServer.saveGalaxyToFile();
+    //     }
+    // };
 
-    thread saveThread(saveTimer);
+    //thread saveThread(saveTimer);
 
     app.bindaddr(host).port(port).multithreaded().run();
 
-    saveThread.join();
+    galaxyServer.joinSaveCronThread();
+    //saveThread.join();
 
     return 0;
 }
