@@ -1,8 +1,7 @@
 #pragma once
 
 #include <string>
-#include <nlohmann/json.hpp>
-
+#include <json.hpp>
 #include "httplib.h"
 #include <regex>
 #include <stdexcept>
@@ -10,20 +9,32 @@
 using namespace std;
 using namespace nlohmann;
 
-class JsonLanguage {
+class Teachers {
 public:
+    //
+    Teachers(const string& initialFileName);
+    //
+    json data;
+    //
+    string getName() const;
     // Receiving by sequence
-    json get(const json &query);
+    json get(json& query);
     // Recording by sequence
-    void add(const json& command);
-    // Delete by sequence
-    void remove(const json& command);
-
+    void addToServers(json& query, const json& value, const json& urls);
+    //
+    void remove(const json& query);
 private:
-    // Local galaxy
-    json galaxy;
+    string fileName;
+    //
+    void init();
+    // Receiving by sequence
+    json getFunc(const json &command);
+    // Recording by sequence
+    void addFunc(const json& command);
+    // Delete by sequence
+    void removeFunc(const json& command);
     // Local get of information from galaxy
-    json processGet(const json& query, const json& current);
+    json processGet(const json& query);
     // Local recording of information in galaxy
     void processAdd(const json& command, const json& result);
     // Local deleting data deom galaxy
@@ -32,10 +43,12 @@ private:
     bool isURL(const string &str);
     // Validate response from server
     void validateResponse(string fullUrl, httplib::Result &response);
+    //
+    void saveGalaxyToFile();
 };
 
-#ifndef JSONLANGUAGE_H
-#define JSONLANGUAGE_H
+#ifndef TEACHERS_H
+#define TEACHERS_H
 
 // Invalid format combination exception
 class InvalidCombinationException : public runtime_error {
