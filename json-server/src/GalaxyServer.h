@@ -32,7 +32,7 @@ private:
 #ifdef _WIN32
     static BOOL WINAPI ConsoleHandler(DWORD signal);
 #else
-    void signalHandler(int signal);
+    static void signalHandler(int signal);
 #endif
     static void shutDownWindows();
 };
