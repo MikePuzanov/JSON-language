@@ -47,10 +47,10 @@ private:
     static condition_variable cvJob;
     static thread cronThread;
     static int saveCronJobTime;
+    static GalaxyServer* instance;
     
 #ifdef _WIN32
     static BOOL WINAPI consoleHandler(DWORD signal);
-    static GalaxyServer* instance;
 #else
     static void signalHandler(int signal);
 #endif
