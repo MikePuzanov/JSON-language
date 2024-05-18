@@ -98,8 +98,8 @@ void JsonLanguage::validateResponse(string fullUrl, Result &response) {
     }
 }
 
-json JsonLanguage::processGet(const json& query, const json& current) {
-    json result = current;
+json JsonLanguage::processGet(const json& query) {
+    json result = galaxy;
 
     if (query.empty()) {
         return galaxy;
