@@ -47,6 +47,7 @@ void Teachers::addToServers(json& query, const json& value, const json& urls) {
     if (urls.is_null() || urls.empty()) {
         processAdd(query, value);
         saveGalaxyToFile();
+        return;
     }
     processAdd(query, urls);
     saveGalaxyToFile();

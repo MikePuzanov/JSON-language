@@ -37,10 +37,10 @@ target_include_directories(teacher-library PRIVATE
     ${asio_SOURCE_DIR}/asio/include
 )
 
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
-#target_include_directories(tests PRIVATE 
-#     ${nlohmann_json_SOURCE_DIR}/single_include
-#     ${asio_SOURCE_DIR}/asio/include
-#     ${CMAKE_CURRENT_SOURCE_DIR}/include
-#)
+target_include_directories(tests PRIVATE 
+     ${nlohmann_json_SOURCE_DIR}/single_include
+     ${asio_SOURCE_DIR}/asio/include
+     ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
