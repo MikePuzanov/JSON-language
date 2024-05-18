@@ -24,7 +24,7 @@ json JsonLanguage::get(const json& command) {
         return json::parse(response->body);        
     } else {
         lock_guard<mutex> lock(galaxyMutex);
-        return processGet(command, galaxy);
+        return processGet(mciSendCommandA);
     }
 }
 

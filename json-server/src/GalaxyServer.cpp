@@ -9,14 +9,21 @@
 #include <csignal>
 #include <chrono>
 #include <thread>
+#include <atomic>
 
 using namespace std;
 using namespace nlohmann;
+
 json galaxy;
 mutex galaxyMutex;
 mutex fileMutex;
+std::atomic<bool> GalaxyServer::running(false);
+mutex GalaxyServer::jobMutex;
+condition_variable GalaxyServer::cvJob;
+thread GalaxyServer::cronThread;
+int GalaxyServer::saveCronJobTime = 0;
 
-// Const WINDOWS
+// Const WINDOW
 const string galaxyFileNameWindows = "galaxy.json";
 const string configFileNameWindows = "serverConfig.json";
 // Const Ubuntu dev/testing
@@ -25,6 +32,16 @@ const string configFileNameUbuntu = "serverConfig.json";
 // Const Ubuntu for .deb pack 
 //const string galaxyFileNameUbuntu = "/usr/bin/jsonServer/galaxy.json";
 //const string configFileNameUbuntu = "/usr/bin/jsonServer/serverConfig.json";
+
+GalaxyServer* GalaxyServer::instance = nullptr;
+
+GalaxyServer::GalaxyServer() {
+    running = false;
+}
+
+GalaxyServer::~GalaxyServer() {
+    joinSaveCronThread();
+}
 
 json GalaxyServer::getGalaxy() {
     return galaxy;
@@ -195,79 +212,79 @@ void GalaxyServer::processDelete(const json& query) {
 }
 
 void GalaxyServer::setSignal() {
-#ifdef _WIN32
-    // setup signal for Windows
-    if (!SetConsoleCtrlHandler(ConsoleHandler, TRUE)) {
-        cerr << "Error: with setup signal habdler" << endl;
-    }
-#else
-    // setup signal for  Linux
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
-    signal(SIGQUIT, signalHandler);
-    signal(SIGHUP, signalHandler);
-    signal(SIGKILL, signalHandler);
-    signal(SIGSTOP, signalHandler);
-#endif
+    instance = this;
+    #ifdef _WIN32
+        if (!SetConsoleCtrlHandler(consoleHandler, TRUE)) {
+            std::cerr << "Error: with setup signal handler" << std::endl;
+        }
+    #else
+        signal(SIGINT, signalHandler);
+        signal(SIGTERM, signalHandler);
+    #endif
 }
 
 void GalaxyServer::addSaveCronJob() {
     if (saveCronJobTime != 0) {
+        running = true;
         cronThread = std::thread([this]() {
-        while (true) {
-            this_thread::sleep_for(chrono::minutes(saveCronJobTime));
-            cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
-            saveGalaxyToFile();
-        }
-    });
+            std::unique_lock<std::mutex> lock(jobMutex);
+            while (running) {
+                if (cvJob.wait_for(lock, std::chrono::minutes(saveCronJobTime), [this] { return !running; })) {
+                    break;
+                }
+                cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
+                saveGalaxyToFile();
+            }
+        });
     }
 }
 
 void GalaxyServer::joinSaveCronThread() {
     if (saveCronJobTime != 0) {
+        {
+            std::lock_guard<std::mutex> lock(jobMutex);
+            running = false;
+        }
+        cvJob.notify_all();
         if (cronThread.joinable()) {
-        cronThread.join();
-    }
+            cronThread.join();
+        }
     }
 }
 
 #ifdef _WIN32
 #include <Windows.h>
 
-// signal for Windows
-BOOL WINAPI GalaxyServer::ConsoleHandler(DWORD signal) {
+BOOL WINAPI GalaxyServer::consoleHandler(DWORD signal) {
+    cout << "ASASDFAF";
     switch (signal) {
         case CTRL_C_EVENT:
-            shutDownWindows();
-            exit(signal);
         case CTRL_BREAK_EVENT:
-            shutDownWindows();
-            exit(signal);
         case CTRL_CLOSE_EVENT:
-            shutDownWindows();
-            exit(signal);
         case CTRL_SHUTDOWN_EVENT:
-            shutDownWindows();
-            exit(signal);
         case CTRL_LOGOFF_EVENT:
-            shutDownWindows();
-            exit(signal);
+            instance->shutDownWindows();
+            return TRUE;
         default:
             return FALSE;
     }
 }
-#else
-#include <unistd.h>
 
-// signal for Linux
+void GalaxyServer::shutDownWindows() {
+    std::cout << "Information: Shutting down the server and saving data in galaxy.json." << std::endl;
+    running = false;
+    cvJob.notify_all();
+    joinSaveCronThread();
+    saveGalaxyToFile();
+    exit(0);
+}
+#else
 void GalaxyServer::signalHandler(int signal) {
-    cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
+    std::cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << std::endl;
+    running = false;
+    cvJob.notify_all();
+    instance->joinSaveCronThread();
     saveGalaxyToFile();
     exit(signal);
 }
 #endif
-
-void GalaxyServer::shutDownWindows() {
-    cout << "Information: Shutting down the server and saving data in galaxy.json. Signal: " << signal << endl;
-    saveGalaxyToFile();
-}
