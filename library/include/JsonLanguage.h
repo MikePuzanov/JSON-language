@@ -23,7 +23,7 @@ private:
     // Local galaxy
     json galaxy;
     // Local get of information from galaxy
-    json processGet(const json& query, const json& current);
+    json processGet(const json& query);
     // Local recording of information in galaxy
     void processAdd(const json& command, const json& result);
     // Local deleting data deom galaxy

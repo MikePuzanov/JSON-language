@@ -24,7 +24,7 @@ json JsonLanguage::get(const json& command) {
         return json::parse(response->body);        
     } else {
         lock_guard<mutex> lock(galaxyMutex);
-        return processGet(command, galaxy);
+        return processGet(command);
     }
 }
 
@@ -98,8 +98,8 @@ void JsonLanguage::validateResponse(string fullUrl, Result &response) {
     }
 }
 
-json JsonLanguage::processGet(const json& query, const json& current) {
-    json result = current;
+json JsonLanguage::processGet(const json& query) {
+    json result = galaxy;
 
     if (query.empty()) {
         return galaxy;
