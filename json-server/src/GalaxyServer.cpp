@@ -230,6 +230,8 @@ void GalaxyServer::addSaveCronJob() {
             std::unique_lock<std::mutex> lock(jobMutex);
             while (running) {
                 if (cvJob.wait_for(lock, std::chrono::minutes(saveCronJobTime), [this] { return !running; })) {
+                    cout << "Information: Saving galaxy in galaxy.json from Job" << endl;
+                    saveGalaxyToFile();
                     break;
                 }
                 cout << "Information: Saving galaxy in galaxy.json from Job" << endl;

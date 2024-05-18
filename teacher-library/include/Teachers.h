@@ -11,21 +11,17 @@ using namespace nlohmann;
 
 class Teachers {
 public:
-    //
     Teachers(const string& initialFileName);
-    //
     json data;
-    //
     string getName() const;
     // Receiving by sequence
     json get(json& query);
     // Recording by sequence
     void addToServers(json& query, const json& value, const json& urls);
-    //
+    // Remove by sequence
     void remove(const json& query);
 private:
     string fileName;
-    //
     void init();
     // Receiving by sequence
     json getFunc(const json &command);
@@ -43,7 +39,6 @@ private:
     bool isURL(const string &str);
     // Validate response from server
     void validateResponse(string fullUrl, httplib::Result &response);
-    //
     void saveGalaxyToFile();
 };
 
